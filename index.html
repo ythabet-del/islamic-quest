@@ -1,9 +1,16 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <title>Islamic Knowledge Quest</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=El+Messiri:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* Layout: projector-first game board — question stage on the left, live team board on the right; stacks to one column on phones.
    Deliberately single-theme: a deep night-blue "majlis" with dark-gold geometry, so it reads the same on any host theme. */
@@ -232,7 +239,17 @@ details.rev p{margin:8px 0 0}
   .podium .blk{font-size:1.6rem}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.codebox{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.code{font-family:var(--display);font-size:2.6rem;font-weight:700;letter-spacing:.18em;color:var(--gold-hi);line-height:1}
+#qr{background:#fff;padding:8px;border-radius:10px;line-height:0}#qr img,#qr canvas{width:132px;height:132px}
+.joinurl{word-break:break-all;font-size:.82rem}
+.entry{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media (max-width:760px){.entry{grid-template-columns:1fr}}
+.entry input.codein{text-transform:uppercase;letter-spacing:.2em;font-size:1.4rem;font-weight:700;text-align:center}
+body{background:var(--bg)}
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
@@ -337,6 +354,18 @@ const pickOne=a=>a[Math.floor(Math.random()*a.length)];
 function defaultState(){return{v:1,phase:"lobby",cfg:{timer:30,count:15,cats:Object.keys(CATS),teamCount:6},
   teams:PRESETS.map((p,i)=>({id:"t"+(i+1),name:p[0],color:p[1]})),stats:{},order:[],qi:0,gen:0,startAt:0,endsAt:0,locks:{},last:null,log:[],rosterSince:0,roster:{}}}
 
+/* ---------------- Firebase settings ----------------
+   Paste your Firebase web config here (Firebase console → Project settings → Your apps → Web app).
+   Leave apiKey empty to run in offline practice mode on one device. */
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyA6691aA85BEFubpsy-Y0Mi2u-rcEGL_VA",
+  authDomain:"knowledge-3.firebaseapp.com",
+  databaseURL:"https://knowledge-3-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"knowledge-3",
+  appId:"1:30712525329:web:5ed545c381e4b7589af7b0"
+};
+let OFF=0;const clock=()=>Date.now()+OFF;
+
 /* ---------------- backends ---------------- */
 function queue(){let p=Promise.resolve();return fn=>(p=p.then(fn).catch(e=>writeFailed(e)))}
 function localBackend(){
@@ -351,23 +380,25 @@ function localBackend(){
     saveMine(d){answers[UID]=clone(d);setTimeout(emitA)},
     saveOther(id,d){answers[id]=clone(d);setTimeout(emitA)}};
 }
-function remoteBackend(db,uid){
-  const sDoc=db.doc("game/state"),w=queue(),mw=queue();
+function fbBackend(rdb,code,uid){
+  const room=rdb.ref("rooms/"+code),w=queue(),mw=queue();
   const fail=e=>{console.warn(e);setConn(false)};
-  return{mode:"remote",
-    watchState(f){sDoc.onSnapshot(s=>{setConn(true);f(s.exists?clone(s.data()):null)},fail)},
-    saveState(s){const c=clone(s);w(()=>sDoc.set(c))},
-    watchAnswers(f){db.collection("answers").onSnapshot(q=>{const o={};q.docs.forEach(d=>{o[d.id]=clone(d.data())});f(o)},fail)},
-    watchMine(f){if(!uid)return f(null);db.doc("answers/"+uid).onSnapshot(s=>f(s.exists?clone(s.data()):null),fail)},
-    saveMine(d){const c=clone(d);mw(()=>db.doc("answers/"+uid).set(c))}};
+  const parse=v=>{try{return typeof v==="string"?JSON.parse(v):null}catch(e){return null}};
+  return{mode:"firebase",
+    watchState(f){room.child("state").on("value",s=>f(parse(s.val())),fail)},
+    saveState(s){const c=JSON.stringify(s);w(()=>room.child("state").set(c))},
+    watchAnswers(f){room.child("answers").on("value",s=>{const o={},v=s.val()||{};for(const k in v){const d=parse(v[k]);if(d)o[k]=d}f(o)},fail)},
+    watchMine(f){room.child("answers/"+uid).on("value",s=>f(parse(s.val())),fail)},
+    saveMine(d){const c=JSON.stringify(d);mw(()=>room.child("answers/"+uid).set(c))}};
 }
 function writeFailed(e){
   console.warn("write failed",e);
-  if(e&&e.code==="invalid_argument"&&ROLE==="player"){ROLE="spectator";toast("Answers can’t be saved","Your access is view-only. Ask the host for Contributor access to join a team.","#ec6c60");render()}
+  if(e&&/permission/i.test(e.code||e.message||"")){toast("Not allowed","Only the host device can change the game. Players can only send their own answers.","#ec6c60")}
   else toast("Couldn’t save","Check your connection, then try again.","#ec6c60");
 }
 
 /* ---------------- globals ---------------- */
+let ROOM="",RDB=null;
 let B=null,ROLE="loading",VIEW="board",LOCAL=false,UID=null,S=null,ANS={},MY=null,CONNECTED=false,SOUND=true,BOTS=false;
 let lastKey="",lastCel="",finalCel="",endArm=0,draftNick="",draftTeam="";
 const isHost=()=>ROLE==="host";
@@ -376,7 +407,7 @@ const teamById=id=>S&&S.teams.find(t=>t.id===id);
 const isActive=id=>teamsOf(S).some(t=>t.id===id);
 const pk=()=>"g"+S.gen+"_"+S.qi;
 const curQ=()=>S&&QB[S.order[S.qi]];
-function stage(){if(!S)return"none";if(S.phase!=="question")return S.phase;const n=Date.now();return n<S.startAt?"ready":n<S.endsAt?"live":"over"}
+function stage(){if(!S)return"none";if(S.phase!=="question")return S.phase;const n=clock();return n<S.startAt?"ready":n<S.endsAt?"live":"over"}
 function setConn(v){if(CONNECTED!==v){CONNECTED=v;renderTop()}}
 
 /* ---------------- host engine ---------------- */
@@ -393,7 +424,7 @@ function engineAnswers(){
   let changed=false;const r=computeRoster();
   if(JSON.stringify(r)!==JSON.stringify(S.roster||{})){S.roster=r;changed=true}
   if(S.phase==="question"){
-    const key=pk(),now=Date.now();
+    const key=pk(),now=clock();
     for(const a of Object.values(ANS)){
       const p=a&&a.picks&&a.picks[key];if(!p||p.c==null)continue;
       if(!isActive(a.team)||S.locks[a.team])continue;
@@ -401,7 +432,7 @@ function engineAnswers(){
       S.locks[a.team]=now;changed=true;beep([660],.06);
     }
     const act=activeWithPlayers();
-    if(act.length&&act.every(t=>S.locks[t.id])&&Date.now()>=S.startAt){reveal();return}
+    if(act.length&&act.every(t=>S.locks[t.id])&&clock()>=S.startAt){reveal();return}
   }
   if(changed)hostSave();
 }
@@ -413,11 +444,11 @@ function buildOrder(){
 }
 function startGame(){
   if(!S.cfg.cats.length)return;
-  S.order=buildOrder();S.gen=Date.now();S.qi=0;S.stats={};S.log=[];S.last=null;
+  S.order=buildOrder();S.gen=clock();S.qi=0;S.stats={};S.log=[];S.last=null;
   teamsOf(S).forEach(t=>S.stats[t.id]={score:0,ok:0,ans:0,streak:0,best:0,hist:""});
   beginQ();
 }
-function beginQ(){const n=Date.now();S.phase="question";S.startAt=n+3500;S.endsAt=S.startAt+S.cfg.timer*1000;S.locks={};S.last=null;hostSave();if(LOCAL&&BOTS)botsPlay()}
+function beginQ(){const n=clock();S.phase="question";S.startAt=n+3500;S.endsAt=S.startAt+S.cfg.timer*1000;S.locks={};S.last=null;hostSave();if(LOCAL&&BOTS)botsPlay()}
 function reveal(){
   if(S.phase!=="question")return;
   const q=curQ(),key=pk(),res={},dur=Math.max(1,S.endsAt-S.startAt);
@@ -434,21 +465,21 @@ function reveal(){
       res[t.id]={c:p.c,ok:true,pts,base,speed,sb,hp,streak:st.streak};
     }else{st.streak=0;st.hist+="0";res[t.id]={c:p.c,ok:false,pts:0,hp:p.h?25:0}}
   }
-  S.last={qi:S.qi,res};S.log[S.qi]=res;S.phase="reveal";S.revealAt=Date.now();hostSave();
+  S.last={qi:S.qi,res};S.log[S.qi]=res;S.phase="reveal";S.revealAt=clock();hostSave();
 }
 function nextQ(){if(S.qi+1>=S.order.length){S.phase="final";hostSave();return}S.qi++;beginQ()}
 function endGame(){if(S.phase==="question")reveal();S.phase="final";hostSave()}
 function newGame(){S.phase="lobby";S.order=[];S.locks={};S.last=null;hostSave()}
-setInterval(()=>{if(isHost()&&S&&S.phase==="question"&&Date.now()>S.endsAt+800)reveal()},400);
+setInterval(()=>{if(isHost()&&S&&S.phase==="question"&&clock()>S.endsAt+800)reveal()},400);
 
 /* practice bots (offline mode only) */
-function botsAdd(){BOTS=true;const now=Date.now();teamsOf(S).forEach(t=>{if((S.roster[t.id]||[]).length)return;B.saveOther("bot-"+t.id,{team:t.id,nick:"Practice bot",joinedAt:now,picks:{}})});toast("Practice bots joined","Each empty team now has a bot that answers on its own.")}
+function botsAdd(){BOTS=true;const now=clock();teamsOf(S).forEach(t=>{if((S.roster[t.id]||[]).length)return;B.saveOther("bot-"+t.id,{team:t.id,nick:"Practice bot",joinedAt:now,picks:{}})});toast("Practice bots joined","Each empty team now has a bot that answers on its own.")}
 function botsPlay(){
   const key=pk(),q=curQ(),gen=S.gen,qi=S.qi;
   Object.keys(ANS).filter(id=>id.startsWith("bot-")).forEach(id=>{
-    const delay=(S.startAt-Date.now())+1500+Math.random()*S.cfg.timer*800;
+    const delay=(S.startAt-clock())+1500+Math.random()*S.cfg.timer*800;
     setTimeout(()=>{if(!S||S.phase!=="question"||S.gen!==gen||S.qi!==qi)return;const a=clone(ANS[id]);if(!a)return;
-      const c=Math.random()<.62?q.ans:shuffle([0,1,2,3].filter(i=>i!==q.ans))[0];a.picks={[key]:{c,t:Date.now(),h:Math.random()<.15}};B.saveOther(id,a)},delay);
+      const c=Math.random()<.62?q.ans:shuffle([0,1,2,3].filter(i=>i!==q.ans))[0];a.picks={[key]:{c,t:clock(),h:Math.random()<.15}};B.saveOther(id,a)},delay);
   });
 }
 
@@ -458,23 +489,25 @@ function myPick(){return MY&&MY.picks&&S?MY.picks[pk()]:null}
 function writeMine(){B.saveMine(MY);render()}
 function joinTeam(team,nick){
   const keep=MY&&MY.gen===S.gen?MY.picks:{};
-  MY={team,nick:String(nick||"Player").trim().slice(0,24)||"Player",joinedAt:Date.now(),gen:S.gen,picks:keep||{}};writeMine();
+  MY={team,nick:String(nick||"Player").trim().slice(0,24)||"Player",joinedAt:clock(),gen:S.gen,picks:keep||{}};writeMine();
 }
 function ensureGen(){if(MY.gen!==S.gen){MY.gen=S.gen;MY.picks={}}}
 function canAnswer(){const t=myTeam();if(!t||stage()!=="live")return false;const p=myPick();if(p&&p.c!=null)return false;return!S.locks[t.id]}
-function choose(i){if(!canAnswer())return;ensureGen();const prev=MY.picks[pk()]||{};MY.picks[pk()]={c:i,t:Date.now(),h:!!prev.h};beep([520,780],.08);writeMine()}
+function choose(i){if(!canAnswer())return;ensureGen();const prev=MY.picks[pk()]||{};MY.picks[pk()]={c:i,t:clock(),h:!!prev.h};beep([520,780],.08);writeMine()}
 function useHint(){if(!canAnswer())return;ensureGen();const prev=MY.picks[pk()]||{};MY.picks[pk()]={...prev,h:true};writeMine()}
 
 /* ---------------- rendering ---------------- */
 function renderTop(){
   const el=$("#topright");const bits=[];
   if(ROLE==="loading"){el.innerHTML='<span class="pill"><span class="dot off"></span>Connecting…</span>';return}
+  if(ROLE==="entry"){el.innerHTML='<span class="pill"><span class="dot '+(CONNECTED?"":"off")+'"></span>'+(CONNECTED?"Online":"Connecting…")+'</span>';$("#banner").innerHTML="";return}
+  if(ROOM)bits.push(`<span class="pill">Game code <b style="color:var(--gold-hi);letter-spacing:.12em;margin-left:4px">${esc(ROOM)}</b></span>`);
   if(isHost())bits.push(`<div class="tabs" role="group" aria-label="View"><button data-view="board" aria-pressed="${VIEW==="board"}">Host board</button><button data-view="player" aria-pressed="${VIEW==="player"}">Player view</button></div>`);
   bits.push(`<span class="pill gold">${isHost()?"Admin":ROLE==="player"?"Player":"Spectator"}</span>`);
   bits.push(LOCAL?'<span class="pill"><span class="dot off"></span>Offline practice</span>':`<span class="pill"><span class="dot ${CONNECTED?"":"off"}"></span>${CONNECTED?"Live":"Reconnecting…"}</span>`);
   el.innerHTML=bits.join("");
   el.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.view;renderTop();lastKey="";render()});
-  $("#banner").innerHTML=LOCAL?'<div class="banner">Offline practice mode: this device runs both the host board and a player view. Open the published link to play live across 6–8 team devices.</div>':"";
+  $("#banner").innerHTML=LOCAL?'<div class="banner">Offline practice mode: this device runs both the host board and a player view. To play live on 6–8 team devices, add your Firebase settings to this file (see the setup guide).</div>':"";
 }
 function viewKey(){return[ROLE,VIEW,S&&S.phase,S&&S.qi,S&&S.gen,stage(),!!myTeam()].join("|")}
 function render(){
@@ -483,6 +516,7 @@ function render(){
   if(focused&&key===lastKey){patchLive();return}
   lastKey=key;
   if(ROLE==="loading"){v.innerHTML=heroHTML("Connecting to the quest room…");return}
+  if(ROLE==="entry"){v.innerHTML=entryHTML();bindEntry();return}
   const playerish=ROLE==="player"||(isHost()&&VIEW==="player");
   v.innerHTML=playerish?playerHTML():isHost()?hostHTML():spectatorHTML();
   bind();renderDock();updateTimers();maybeCelebrate(playerish);
@@ -533,12 +567,15 @@ function setupHTML(){
    <aside class="card stack">
      <div><h3>Who has joined</h3><div class="roster" id="rosterBox">${rosterHTML()}</div></div>
      <div class="row"><button class="btn ghost" id="clearRoster">Clear the roster</button></div>
-     <div class="share"><b style="color:var(--text)">How players join</b><ol>
-       <li>Share this page with Contributor access, so players can submit answers. Viewers can watch the board but cannot answer.</li>
-       <li>Each player opens the link on a phone or laptop, types a nickname and picks a team.</li>
-       <li>Show this host board on the big screen and press Start.</li></ol></div>
+     ${LOCAL?"":`<div class="share"><b style="color:var(--text)">How players join</b>
+       <div class="codebox" style="margin-top:8px"><div id="qr" aria-label="QR code to join"></div><div><div class="label">Game code</div><div class="code">${esc(ROOM)}</div></div></div>
+       <ol><li>Players scan the QR code, or open <span class="joinurl">${esc(joinURL())}</span>.</li>
+       <li>Each player types a nickname and picks a team. No account is needed.</li>
+       <li>Show this host board on the big screen and press Start.</li></ol></div>`}
    </aside></div>`;
 }
+function joinURL(){return location.origin+location.pathname+"?room="+ROOM}
+function drawQR(){const el=$("#qr");if(!el||el.dataset.done||!window.QRCode)return;el.dataset.done=1;try{new QRCode(el,{text:joinURL(),width:264,height:264,colorDark:"#071731",colorLight:"#ffffff"})}catch(e){el.remove()}}
 function rosterHTML(){
   return teamsOf(S).map(t=>{const names=(S.roster&&S.roster[t.id])||[];
     return`<div class="rteam" style="--c:${t.color}"><span class="sw" style="margin-top:4px"></span><div style="min-width:0"><b>${esc(t.name)} <span class="muted" style="font-weight:600">· ${names.length} ${names.length===1?"player":"players"}</span></b><div class="names">${names.length?names.map(esc).join(", "):"Waiting for players"}</div></div></div>`}).join("");
@@ -601,19 +638,19 @@ function renderDock(){
   if(S.phase==="question")html=`<span class="info">Auto-reveals when every team with players has locked in, or when time runs out.</span><button class="btn blue" id="revealBtn">Reveal now</button>`;
   else if(S.phase==="reveal")html=`<button class="btn gold big" id="nextBtn">${last?"Show final standings":"Next mission →"}</button>`;
   else if(S.phase==="final")html=`<button class="btn gold" id="newBtn">New game with the same teams</button>`;
-  if(S.phase!=="final")html+=`<button class="btn warn" id="endBtn">${endArm>Date.now()?"Tap again to end the game":"End game"}</button>`;
+  if(S.phase!=="final")html+=`<button class="btn warn" id="endBtn">${endArm>clock()?"Tap again to end the game":"End game"}</button>`;
   html+=`<button class="btn ghost" id="soundBtn" aria-pressed="${SOUND}">Sound ${SOUND?"on":"off"}</button>`;
   d.innerHTML=html;
   const on=(id,f)=>{const b=d.querySelector(id);if(b)b.onclick=f};
   on("#revealBtn",()=>reveal());on("#nextBtn",()=>nextQ());on("#newBtn",()=>newGame());
-  on("#endBtn",()=>{if(endArm>Date.now()){endArm=0;endGame()}else{endArm=Date.now()+4000;renderDock();setTimeout(renderDock,4100)}});
+  on("#endBtn",()=>{if(endArm>clock()){endArm=0;endGame()}else{endArm=clock()+4000;renderDock();setTimeout(renderDock,4100)}});
   on("#soundBtn",()=>{SOUND=!SOUND;renderDock()});
 }
 
 /* ---- spectator ---- */
 function spectatorHTML(){
   if(!S)return heroHTML("The host hasn’t set up the quest yet. This page updates by itself when the game begins.");
-  if(S.phase==="lobby")return heroHTML("Teams are gathering. You’re watching as a spectator: ask the host for Contributor access if you want to join a team.")+`<section class="card" style="margin-top:16px"><h3>Teams</h3><div class="roster">${rosterHTML()}</div></section>`;
+  if(S.phase==="lobby")return heroHTML("Teams are gathering. You’re watching as a spectator.")+`<section class="card" style="margin-top:16px"><h3>Teams</h3><div class="roster">${rosterHTML()}</div></section>`;
   if(S.phase==="final")return finalHTML(false);
   return boardHTML(false);
 }
@@ -684,6 +721,7 @@ function finalHTML(forPlayer){
 
 /* ---- bindings ---- */
 function bind(){
+  drawQR();
   const v=$("#view");
   if(isHost()&&S&&S.phase==="lobby"&&VIEW==="board"){
     v.querySelectorAll("[data-tn]").forEach(inp=>inp.oninput=()=>{const i=+inp.dataset.tn;S.teams[i].name=inp.value.slice(0,22)||PRESETS[i][0];hostSaveSoon()});
@@ -693,14 +731,14 @@ function bind(){
     v.querySelectorAll("[data-timer]").forEach(b=>b.onclick=()=>{S.cfg.timer=+b.dataset.timer;hostSave();lastKey="";render()});
     const sb=$("#startBtn");if(sb)sb.onclick=()=>{unlockAudio();startGame()};
     const bb=$("#botsBtn");if(bb)bb.onclick=botsAdd;
-    const cr=$("#clearRoster");if(cr)cr.onclick=()=>{S.rosterSince=Date.now();S.roster=computeRoster();hostSave();lastKey="";render();toast("Roster cleared","Players will be asked to pick a team again.")};
+    const cr=$("#clearRoster");if(cr)cr.onclick=()=>{S.rosterSince=clock();S.roster=computeRoster();hostSave();lastKey="";render();toast("Roster cleared","Players will be asked to pick a team again.")};
   }
   v.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{draftTeam=b.dataset.pick;const n=$("#nick");if(n)draftNick=n.value;v.querySelectorAll("[data-pick]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.pick===draftTeam))});
   const nick=$("#nick");if(nick)nick.oninput=()=>{draftNick=nick.value};
   const jb=$("#joinBtn");if(jb)jb.onclick=()=>{const team=draftTeam||(MY&&MY.team);const n=($("#nick").value||"").trim();
     if(!team){toast("Pick a team","Tap one of the team cards first.","#ec6c60");return}
     if(!n){toast("Add a nickname","Your team sees it on the board.","#ec6c60");$("#nick").focus();return}
-    if(!UID&&!LOCAL){toast("Sign in to play","You need to be signed in to join a team.","#ec6c60");return}
+    if(!UID&&!LOCAL){toast("Not connected yet","Wait a moment for the connection, then try again.","#ec6c60");return}
     unlockAudio();switching=false;joinTeam(team,n);lastKey="";render()};
   const sw=$("#switchBtn");if(sw)sw.onclick=()=>{switching=true;draftTeam=MY.team;lastKey="";render()};
   const cs=$("#cancelSwitch");if(cs)cs.onclick=()=>{switching=false;lastKey="";render()};
@@ -711,7 +749,7 @@ function bind(){
 /* ---------------- timers ---------------- */
 let lastStage="";
 function updateTimers(){
-  const now=Date.now();
+  const now=clock();
   document.querySelectorAll("[data-ring]").forEach(el=>{const s=+el.dataset.start,e=+el.dataset.end,rem=Math.max(0,e-now),f=Math.min(1,rem/(e-s));
     el.querySelector(".rp").style.strokeDashoffset=String(326.7*(1-f));el.querySelector("b").textContent=Math.ceil(rem/1000);el.classList.toggle("urgent",rem>0&&rem<=5000)});
   document.querySelectorAll("[data-ready]").forEach(el=>{el.textContent=Math.max(1,Math.ceil((S.startAt-now)/1000))});
@@ -723,7 +761,7 @@ function maybeCelebrate(playerish){
   if(!S)return;
   if(S.phase==="reveal"&&S.last){
     const key=S.gen+"_"+S.qi;if(key===lastCel)return;lastCel=key;
-    if(Date.now()-(S.revealAt||0)>20000)return;
+    if(clock()-(S.revealAt||0)>20000)return;
     const res=S.last.res;
     if(playerish){
       const t=myTeam();if(!t)return;const r=res[t.id];
@@ -780,30 +818,72 @@ function beep(freqs,len){
     o.connect(g).connect(AC.destination);o.start(t0+i*len);o.stop(t0+i*len+len*2.6)})}catch(e){}
 }
 
+/* ---------------- entry (host or join) ---------------- */
+let entryBusy=false;
+function entryHTML(){
+  const q=new URLSearchParams(location.search).get("room")||"";
+  return heroHTML("Join with the game code on the big screen, or host a new game for your teams.")+`<div class="entry">
+   <section class="card stage stack"><div><div class="eyebrow">Player</div><h2 style="font-size:1.5rem;margin-top:6px">Join a game</h2></div>
+     <label><span class="label" style="display:block">Game code</span><input id="codeIn" class="codein" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="ABCDE" value="${esc(q.toUpperCase())}"></label>
+     <button class="btn gold big" id="joinRoomBtn" ${entryBusy?"disabled":""}>Join game</button></section>
+   <section class="card stack"><div><div class="eyebrow">Admin</div><h2 style="font-size:1.5rem;margin-top:6px">Host a new game</h2></div>
+     <p class="muted" style="margin:0">Creates a fresh game code. This device becomes the admin board: it sets the teams, starts each mission and keeps score. Keep it open during the game.</p>
+     <button class="btn ghost big" id="hostBtn" ${entryBusy?"disabled":""}>Host a new game</button></section></div>`;
+}
+function bindEntry(){
+  const ci=$("#codeIn");
+  const go=()=>{const c=(ci.value||"").trim().toUpperCase();if(c.length<4){toast("Enter the game code","It’s shown on the host’s screen.","#ec6c60");ci.focus();return}enterRoom(c,false)};
+  $("#joinRoomBtn").onclick=go;ci.onkeydown=e=>{if(e.key==="Enter")go()};
+  $("#hostBtn").onclick=createRoom;
+}
+function newCode(){const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789";let c="";for(let i=0;i<5;i++)c+=a[Math.floor(Math.random()*a.length)];return c}
+async function createRoom(){
+  if(entryBusy||!UID)return;entryBusy=true;render();
+  try{
+    for(let i=0;i<6;i++){const c=newCode();
+      try{await RDB.ref("rooms/"+c+"/host").set(UID);await enterRoom(c,true);return}catch(e){if(!/permission/i.test(e.code||e.message||""))throw e}}
+    throw new Error("no free code");
+  }catch(e){console.warn(e);toast("Couldn’t create a game","Check the Firebase setup and your connection.","#ec6c60")}
+  finally{entryBusy=false;if(ROLE==="entry")render()}
+}
+async function enterRoom(code,fresh){
+  let host=null;
+  try{host=(await RDB.ref("rooms/"+code+"/host").get()).val()}catch(e){console.warn(e)}
+  if(!host){toast("Game not found","Check the code on the host’s screen.","#ec6c60");return}
+  ROOM=code;history.replaceState(null,"","?room="+code);
+  ROLE=host===UID?"host":"player";VIEW=ROLE==="host"?"board":"player";
+  B=fbBackend(RDB,code,UID);S=null;MY=null;ANS={};lastKey="";
+  B.watchState(onState);
+  if(isHost())B.watchAnswers(a=>{ANS=a||{};engineAnswers();render()});
+  B.watchMine(d=>{if(d)MY=d;render()});
+  if(isHost()&&fresh){S=defaultState();hostSave()}
+  renderTop();render();
+}
+
 /* ---------------- boot ---------------- */
 function onState(d){
   if(d)S=d;else if(isHost())S=S||defaultState();else S=null;
   if(S&&isHost())engineAnswers();
   render();
 }
+function startOffline(){
+  LOCAL=true;UID="local-host";ROLE="host";B=localBackend();S=defaultState();
+  renderTop();B.watchState(onState);B.watchAnswers(a=>{ANS=a||{};engineAnswers();render()});B.watchMine(d=>{if(d)MY=d;render()});render();
+}
 async function boot(){
   renderTop();render();
-  let db=null,user=null;
-  if(window.claude&&window.claude.use){try{[db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")])}catch(e){db=null}}
-  if(!db){LOCAL=true;UID="local-host";ROLE="host";B=localBackend();S=defaultState()}
-  else{
-    const me=user?await user.me():null;UID=me&&me.id||null;
-    const canEdit=user?await user.canEdit():false;const canW=user?await user.can("data.write"):null;
-    ROLE=canEdit?"host":(UID&&canW!==false?"player":"spectator");
-    VIEW=ROLE==="host"?"board":"player";B=remoteBackend(db,UID);
-  }
-  renderTop();
-  B.watchState(onState);
-  if(isHost())B.watchAnswers(a=>{ANS=a||{};engineAnswers();render()});
-  if(ROLE!=="spectator")B.watchMine(d=>{if(d)MY=d;render()});
-  render();
+  if(!FIREBASE_CONFIG.apiKey||!window.firebase){startOffline();return}
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);RDB=firebase.database();
+    RDB.ref(".info/serverTimeOffset").on("value",s=>{OFF=s.val()||0});
+    RDB.ref(".info/connected").on("value",s=>setConn(s.val()===true));
+    const cred=await firebase.auth().signInAnonymously();UID=cred.user.uid;
+  }catch(e){console.warn(e);toast("Couldn’t connect","Check the Firebase settings in this file. Running offline practice instead.","#ec6c60");startOffline();return}
+  ROLE="entry";renderTop();render();
+  const q=new URLSearchParams(location.search).get("room");
+  if(q)enterRoom(q.trim().toUpperCase(),false);
 }
 boot();
 </script>
-
-</body></html>
+</body>
+</html>
