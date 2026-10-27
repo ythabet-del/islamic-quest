@@ -66,6 +66,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
 .btn.big{font-size:1.08rem;padding:14px 26px}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .btn:focus-visible,.opt:focus-visible,.tp:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,.tabs button:focus-visible,.cat:focus-visible,summary:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+textarea{background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:9px 11px;font:inherit;width:100%;min-width:0;resize:vertical;min-height:64px;line-height:1.45}
 input,select{background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:9px 11px;font:inherit;width:100%;min-width:0}
 .seg{display:inline-flex;border:1px solid var(--line2);border-radius:12px;overflow:hidden;flex-wrap:wrap}
 .seg button{background:transparent;color:var(--text);border:0;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums}
@@ -247,6 +248,20 @@ details.rev p{margin:8px 0 0}
 @media (max-width:760px){.entry{grid-template-columns:1fr}}
 .entry input.codein{text-transform:uppercase;letter-spacing:.2em;font-size:1.4rem;font-weight:700;text-align:center}
 body{background:var(--bg)}
+.edhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.edtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.edtools input[type=search]{width:220px}
+.qlist{display:flex;flex-direction:column;gap:10px}
+.qitem{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(255,255,255,.025)}
+.qitem .qt{flex:1;min-width:0}
+.qitem .qt b{display:block;font-weight:600;line-height:1.4}
+.qitem .qt small{color:var(--muted)}
+.qitem.custom{border-color:var(--line)}
+.edform{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.edform .full{grid-column:1/-1}
+.edform label>span{display:block;font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:4px}
+.edform .ok>span{color:var(--ok)}
+@media (max-width:700px){.edform{grid-template-columns:1fr}.edtools input[type=search]{width:100%}}
 </style>
 </head>
 <body>
@@ -342,9 +357,19 @@ function hash(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function shuffle(a,r=Math.random){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 const LET=["A","B","C","D"];
-const QB={};
-RAW.forEach(x=>{const r=rng(hash(x.id+"iqk"));const idx=shuffle([0,1,2,3],r);QB[x.id]={...x,opts:idx.map(i=>x.o[i]),ans:idx.indexOf(0)}});
-const catCount=c=>RAW.filter(x=>x.c===c).length;
+/* The live question bank: built-in RAW, or the admin's edited copy (saved on the host device and shared with players through the room). */
+const BANK_KEY="iqk_bank_v1";
+let BANK=clone(RAW),BANK_CUSTOM=false;const QB={};
+function validQ(x){return x&&typeof x.id==="string"&&CATS[x.c]&&typeof x.q==="string"&&x.q.trim()&&Array.isArray(x.o)&&x.o.length===4&&x.o.every(o=>typeof o==="string"&&o.trim())}
+function applyBank(list){
+  BANK=(Array.isArray(list)?list:RAW).filter(validQ).map(x=>({id:x.id,c:x.c,l:x.l===2?2:1,q:x.q,ar:x.ar||"",o:x.o.slice(0,4),h:x.h||"",e:x.e||"",s:x.s||"",u:x.u||""}));
+  for(const k in QB)delete QB[k];
+  BANK.forEach(x=>{const r=rng(hash(x.id+"iqk"));const idx=shuffle([0,1,2,3],r);QB[x.id]={...x,opts:idx.map(i=>x.o[i]),ans:idx.indexOf(0)}});
+}
+const qOf=id=>QB[id]||{id,c:"general",l:1,q:"Loading the question…",ar:"",o:["…","…","…","…"],opts:["…","…","…","…"],ans:0,h:"",e:"",s:"",u:""};
+const catCount=c=>BANK.filter(x=>x.c===c).length;
+(function loadBank(){let saved=null;try{saved=JSON.parse(localStorage.getItem(BANK_KEY)||"null")}catch(e){}
+  if(Array.isArray(saved)&&saved.filter(validQ).length){BANK_CUSTOM=true;applyBank(saved)}else applyBank(RAW)})();
 
 const PRESETS=[["Crescent","#f1c23d"],["Lantern","#4fa3ff"],["Minaret","#3fd0a6"],["Oasis","#ff9a52"],["Falcon","#b993ff"],["Compass","#ff7aa8"],["Palm","#8fdc5c"],["Scroll","#62d6ef"]];
 const WIN=["MashaAllah! Brilliant answer.","Barakallahu feekum — knowledge is light!","Spot on! Keep the momentum going.","Excellent recall. Onward to the next mission!","Alhamdulillah, another mission cleared!","Sharp minds, strong team. Keep climbing!"];
@@ -378,10 +403,11 @@ function localBackend(){
     watchAnswers(f){aL.push(f);setTimeout(()=>f(clone(answers)))},
     watchMine(f){mL.push(f);setTimeout(()=>f(clone(answers[UID]||null)))},
     saveMine(d){answers[UID]=clone(d);setTimeout(emitA)},
-    saveOther(id,d){answers[id]=clone(d);setTimeout(emitA)}};
+    saveOther(id,d){answers[id]=clone(d);setTimeout(emitA)},
+    saveBank(){},watchBank(){}};
 }
 function fbBackend(rdb,code,uid){
-  const room=rdb.ref("rooms/"+code),w=queue(),mw=queue();
+  const room=rdb.ref("rooms/"+code),w=queue(),mw=queue(),bw=queue();
   const fail=e=>{console.warn(e);setConn(false)};
   const parse=v=>{try{return typeof v==="string"?JSON.parse(v):null}catch(e){return null}};
   return{mode:"firebase",
@@ -389,7 +415,9 @@ function fbBackend(rdb,code,uid){
     saveState(s){const c=JSON.stringify(s);w(()=>room.child("state").set(c))},
     watchAnswers(f){room.child("answers").on("value",s=>{const o={},v=s.val()||{};for(const k in v){const d=parse(v[k]);if(d)o[k]=d}f(o)},fail)},
     watchMine(f){room.child("answers/"+uid).on("value",s=>f(parse(s.val())),fail)},
-    saveMine(d){const c=JSON.stringify(d);mw(()=>room.child("answers/"+uid).set(c))}};
+    saveMine(d){const c=JSON.stringify(d);mw(()=>room.child("answers/"+uid).set(c))},
+    saveBank(list){const c=JSON.stringify(list);bw(()=>room.child("bank").set(c).catch(e=>{console.warn(e);toast("Questions not shared yet","Players still see the original questions. Update the database rules in Firebase (see the setup guide).","#ec6c60")}))},
+    watchBank(f){room.child("bank").on("value",s=>f(parse(s.val())),fail)}};
 }
 function writeFailed(e){
   console.warn("write failed",e);
@@ -406,7 +434,7 @@ const teamsOf=s=>(s?s.teams.slice(0,s.cfg.teamCount):[]);
 const teamById=id=>S&&S.teams.find(t=>t.id===id);
 const isActive=id=>teamsOf(S).some(t=>t.id===id);
 const pk=()=>"g"+S.gen+"_"+S.qi;
-const curQ=()=>S&&QB[S.order[S.qi]];
+const curQ=()=>S&&qOf(S.order[S.qi]);
 function stage(){if(!S)return"none";if(S.phase!=="question")return S.phase;const n=clock();return n<S.startAt?"ready":n<S.endsAt?"live":"over"}
 function setConn(v){if(CONNECTED!==v){CONNECTED=v;renderTop()}}
 
@@ -437,7 +465,7 @@ function engineAnswers(){
   if(changed)hostSave();
 }
 function buildOrder(){
-  const cats=S.cfg.cats.filter(c=>CATS[c]);const pools={};cats.forEach(c=>pools[c]=shuffle(RAW.filter(x=>x.c===c).map(x=>x.id)));
+  const cats=S.cfg.cats.filter(c=>CATS[c]);const pools={};cats.forEach(c=>pools[c]=shuffle(BANK.filter(x=>x.c===c).map(x=>x.id)));
   const total=Math.min(S.cfg.count||999,cats.reduce((n,c)=>n+pools[c].length,0));const out=[];
   while(out.length<total){for(const c of shuffle(cats)){if(out.length>=total)break;const id=pools[c].shift();if(id)out.push(id)}}
   return out;
@@ -502,7 +530,7 @@ function renderTop(){
   if(ROLE==="loading"){el.innerHTML='<span class="pill"><span class="dot off"></span>Connecting…</span>';return}
   if(ROLE==="entry"){el.innerHTML='<span class="pill"><span class="dot '+(CONNECTED?"":"off")+'"></span>'+(CONNECTED?"Online":"Connecting…")+'</span>';$("#banner").innerHTML="";return}
   if(ROOM)bits.push(`<span class="pill">Game code <b style="color:var(--gold-hi);letter-spacing:.12em;margin-left:4px">${esc(ROOM)}</b></span>`);
-  if(isHost())bits.push(`<div class="tabs" role="group" aria-label="View"><button data-view="board" aria-pressed="${VIEW==="board"}">Host board</button><button data-view="player" aria-pressed="${VIEW==="player"}">Player view</button></div>`);
+  if(isHost())bits.push(`<div class="tabs" role="group" aria-label="View"><button data-view="board" aria-pressed="${VIEW!=="player"}">Host board</button><button data-view="player" aria-pressed="${VIEW==="player"}">Player view</button></div>`);
   bits.push(`<span class="pill gold">${isHost()?"Admin":ROLE==="player"?"Player":"Spectator"}</span>`);
   bits.push(LOCAL?'<span class="pill"><span class="dot off"></span>Offline practice</span>':`<span class="pill"><span class="dot ${CONNECTED?"":"off"}"></span>${CONNECTED?"Live":"Reconnecting…"}</span>`);
   el.innerHTML=bits.join("");
@@ -512,13 +540,14 @@ function renderTop(){
 function viewKey(){return[ROLE,VIEW,S&&S.phase,S&&S.qi,S&&S.gen,stage(),!!myTeam()].join("|")}
 function render(){
   const v=$("#view");const key=viewKey();
-  const focused=v.contains(document.activeElement)&&/INPUT|SELECT/.test(document.activeElement.tagName);
+  const focused=v.contains(document.activeElement)&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
   if(focused&&key===lastKey){patchLive();return}
   lastKey=key;
   if(ROLE==="loading"){v.innerHTML=heroHTML("Connecting to the quest room…");return}
   if(ROLE==="entry"){v.innerHTML=entryHTML();bindEntry();return}
   const playerish=ROLE==="player"||(isHost()&&VIEW==="player");
-  v.innerHTML=playerish?playerHTML():isHost()?hostHTML():spectatorHTML();
+  if(isHost()&&VIEW==="editor"&&!(S&&S.phase==="lobby"))VIEW="board";
+  v.innerHTML=playerish?playerHTML():isHost()&&VIEW==="editor"?editorHTML():isHost()?hostHTML():spectatorHTML();
   bind();renderDock();updateTimers();maybeCelebrate(playerish);
 }
 function patchLive(){const r=$("#rosterBox");if(r)r.innerHTML=rosterHTML();const tp=$("#tpickBox");if(tp)tp.innerHTML=teamPickHTML()}
@@ -561,6 +590,7 @@ function setupHTML(){
        <div><p class="label">Questions</p><div class="seg" role="group" aria-label="Number of questions">${counts}</div></div>
        <div><p class="label">Countdown per question</p><div class="seg" role="group" aria-label="Seconds per question">${timers}</div></div>
      </div>
+     <div class="row" style="justify-content:space-between"><span class="muted">${BANK.length} questions in the bank${BANK_CUSTOM?" · edited by you":""}</span><button class="btn ghost" id="editQBtn">✎ Edit questions</button></div>
      <div class="row"><button class="btn gold big" id="startBtn" ${c.cats.length?"":"disabled"}>Start the quest · ${nq} missions</button>
      ${LOCAL?'<button class="btn ghost" id="botsBtn">Fill empty teams with practice bots</button>':""}</div>
    </section>
@@ -583,7 +613,7 @@ function rosterHTML(){
 
 function progressHTML(){
   const n=S.order.length,done=S.qi+(S.phase==="reveal"||S.phase==="final"?1:0);
-  const per={};S.order.forEach((id,i)=>{const c=QB[id].c;per[c]=per[c]||{n:0,d:0};per[c].n++;if(i<done)per[c].d++});
+  const per={};S.order.forEach((id,i)=>{const c=qOf(id).c;per[c]=per[c]||{n:0,d:0};per[c].n++;if(i<done)per[c].d++});
   const cur=curQ();
   return`<div class="progress"><span class="mission" style="font-variant-numeric:tabular-nums">Mission ${Math.min(S.qi+1,n)} of ${n}</span><div class="bar" aria-hidden="true"><i style="width:${n?done/n*100:0}%"></i></div>
   <div class="missions">${Object.entries(per).map(([c,v])=>`<span class="mchip ${cur&&cur.c===c&&S.phase!=="final"?"on":""}">${esc(CATS[c].name)} ${v.d}/${v.n}</span>`).join("")}</div></div>`;
@@ -705,10 +735,10 @@ function playerHTML(){
 function finalHTML(forPlayer){
   const R=ranked();const top=[R[1],R[0],R[2]];const h=[120,170,90];
   const pod=top.map((t,i)=>t?`<div class="pod" style="--c:${t.color}"><div class="nm">${esc(t.name)}</div><div class="pts">${fmt(t.st.score)} pts</div><div class="blk" style="height:${h[i]}px">${[2,1,3][i]}</div></div>`:"<div></div>").join("");
-  const strongest=id=>{const by={};S.order.forEach((qid,i)=>{const r=S.log[i]&&S.log[i][id];const c=QB[qid].c;by[c]=by[c]||{ok:0,n:0};by[c].n++;if(r&&r.ok)by[c].ok++});let best=null;for(const[c,v]of Object.entries(by)){if(!best||v.ok/v.n>best.r)best={c,r:v.ok/v.n}}return best&&best.r>0?CATS[best.c].name:"—"};
+  const strongest=id=>{const by={};S.order.forEach((qid,i)=>{const r=S.log[i]&&S.log[i][id];const c=qOf(qid).c;by[c]=by[c]||{ok:0,n:0};by[c].n++;if(r&&r.ok)by[c].ok++});let best=null;for(const[c,v]of Object.entries(by)){if(!best||v.ok/v.n>best.r)best={c,r:v.ok/v.n}}return best&&best.r>0?CATS[best.c].name:"—"};
   const rows=R.map((t,i)=>`<tr><td>${i+1}</td><td><span class="sw" style="--c:${t.color};display:inline-block;vertical-align:-2px;margin-right:8px"></span>${esc(t.name)}</td><td class="num">${fmt(t.st.score)}</td><td class="num">${t.st.ok}/${S.order.length}</td><td class="num">${t.st.ans?Math.round(t.st.ok/t.st.ans*100)+"%":"—"}</td><td class="num">${t.st.best}</td><td>${esc(strongest(t.id))}</td></tr>`).join("");
   const mine=forPlayer&&myTeam();const myRank=mine?R.findIndex(x=>x.id===mine.id)+1:0;
-  const review=S.order.map((id,i)=>{const q=QB[id],res=S.log[i]||{};const chips=teamsOf(S).map(t=>{const r=res[t.id];return`<span class="tchip" style="--c:${t.color}"><i></i>${esc(t.name)} ${r?(r.ok?"✓":"✗"):"–"}</span>`}).join("");
+  const review=S.order.map((id,i)=>{const q=qOf(id),res=S.log[i]||{};const chips=teamsOf(S).map(t=>{const r=res[t.id];return`<span class="tchip" style="--c:${t.color}"><i></i>${esc(t.name)} ${r?(r.ok?"✓":"✗"):"–"}</span>`}).join("");
     return`<details class="rev"><summary>${i+1}. ${esc(q.q)}</summary><p><b style="color:var(--ok)">Answer:</b> ${esc(q.opts[q.ans])}</p><p>${esc(q.e)}</p>${sourceHTML(q)}<div class="who" style="margin-top:10px">${chips}</div></details>`}).join("");
   return`<section class="hero" style="text-align:center">${starSVG("bigstar spinstar")}<div class="eyebrow">Quest complete</div>
     <h2 style="max-width:none">${R[0]?`Team <em>${esc(R[0].name)}</em> leads the quest!`:"Quest complete"}</h2>
@@ -723,6 +753,7 @@ function finalHTML(forPlayer){
 function bind(){
   drawQR();
   const v=$("#view");
+  if(isHost()&&VIEW==="editor")bindEditor();
   if(isHost()&&S&&S.phase==="lobby"&&VIEW==="board"){
     v.querySelectorAll("[data-tn]").forEach(inp=>inp.oninput=()=>{const i=+inp.dataset.tn;S.teams[i].name=inp.value.slice(0,22)||PRESETS[i][0];hostSaveSoon()});
     v.querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{S.cfg.teamCount=+b.dataset.tc;S.roster=computeRoster();hostSave();lastKey="";render()});
@@ -731,6 +762,7 @@ function bind(){
     v.querySelectorAll("[data-timer]").forEach(b=>b.onclick=()=>{S.cfg.timer=+b.dataset.timer;hostSave();lastKey="";render()});
     const sb=$("#startBtn");if(sb)sb.onclick=()=>{unlockAudio();startGame()};
     const bb=$("#botsBtn");if(bb)bb.onclick=botsAdd;
+    const eq=$("#editQBtn");if(eq)eq.onclick=()=>{VIEW="editor";ED={cat:"all",find:"",open:null,draft:null,arm:""};lastKey="";renderTop();render();scrollTo(0,0)};
     const cr=$("#clearRoster");if(cr)cr.onclick=()=>{S.rosterSince=clock();S.roster=computeRoster();hostSave();lastKey="";render();toast("Roster cleared","Players will be asked to pick a team again.")};
   }
   v.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{draftTeam=b.dataset.pick;const n=$("#nick");if(n)draftNick=n.value;v.querySelectorAll("[data-pick]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.pick===draftTeam))});
@@ -818,6 +850,84 @@ function beep(freqs,len){
     o.connect(g).connect(AC.destination);o.start(t0+i*len);o.stop(t0+i*len+len*2.6)})}catch(e){}
 }
 
+/* ---------------- question editor (admin, lobby only) ---------------- */
+let ED={cat:"all",find:"",open:null,draft:null,arm:""};
+function saveBank(list,msg){
+  applyBank(list);BANK_CUSTOM=true;
+  try{localStorage.setItem(BANK_KEY,JSON.stringify(BANK))}catch(e){}
+  if(B&&B.saveBank)B.saveBank(BANK);
+  if(msg)toast(msg,"Players get the update automatically.");
+}
+function blankQ(){return{id:"q"+Date.now().toString(36),c:ED.cat!=="all"?ED.cat:"general",l:1,q:"",ar:"",o:["","","",""],h:"",e:"",s:"",u:""}}
+function edFormHTML(d,isNew){
+  const cats=Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${d.c===k?"selected":""}>${esc(v.name)}</option>`).join("");
+  const f=(k,label,ph,ta)=>`<label class="full"><span>${label}</span>${ta?`<textarea data-f="${k}" placeholder="${esc(ph)}">${esc(d[k])}</textarea>`:`<input data-f="${k}" placeholder="${esc(ph)}" value="${esc(d[k])}">`}</label>`;
+  const opt=i=>`<label class="${i?"":"ok"}"><span>${i?"Wrong answer "+i:"✓ Correct answer"}</span><input data-o="${i}" value="${esc(d.o[i])}" placeholder="${i?"A believable wrong answer":"The right answer"}"></label>`;
+  return`<section class="card stack" style="border-color:var(--gold)"><h3 style="margin:0">${isNew?"New question":"Edit question"}</h3>
+   <div class="edform">
+    <label><span>Mission</span><select data-f="c">${cats}</select></label>
+    <label><span>Level</span><select data-f="l"><option value="1" ${d.l!==2?"selected":""}>Advanced · 100 pts</option><option value="2" ${d.l===2?"selected":""}>Expert · 150 pts</option></select></label>
+    ${f("q","Question","Type the question",true)}
+    ${f("ar","Arabic text (optional)","e.g. an ayah or word shown in Arabic")}
+    ${opt(0)}${opt(1)}${opt(2)}${opt(3)}
+    <p class="muted full" style="margin:0;font-size:.85rem">Players see the four answers in a shuffled order.</p>
+    ${f("h","Hint","A clue that helps without giving the answer away",true)}
+    ${f("e","Explanation shown after the answer","Why this is the answer",true)}
+    <label><span>Source</span><input data-f="s" placeholder="e.g. Sahih al-Bukhari 1" value="${esc(d.s)}"></label>
+    <label><span>Source link (optional)</span><input data-f="u" placeholder="https://…" value="${esc(d.u)}"></label>
+   </div>
+   <div class="row"><button class="btn gold" id="edSave">Save question</button><button class="btn ghost" id="edCancel">Cancel</button>
+   ${isNew?"":`<button class="btn warn" id="edDel">${ED.arm==="del"?"Tap again to delete":"Delete question"}</button>`}</div></section>`;
+}
+function editorHTML(){
+  const counts=Object.keys(CATS).map(k=>`<button data-edcat="${k}" aria-pressed="${ED.cat===k}">${esc(CATS[k].name)} ${catCount(k)}</button>`).join("");
+  const term=ED.find.trim().toLowerCase();
+  const list=BANK.filter(x=>(ED.cat==="all"||x.c===ED.cat)&&(!term||(x.q+" "+x.o.join(" ")).toLowerCase().includes(term)));
+  const builtIn=new Set(RAW.map(x=>x.id));
+  const rows=list.map(x=>ED.open===x.id?edFormHTML(ED.draft,false):`<div class="qitem ${builtIn.has(x.id)?"":"custom"}"><div class="qt"><small>${esc(CATS[x.c].name)} · ${x.l===2?"Expert":"Advanced"}${builtIn.has(x.id)?"":" · added by you"}</small><b>${esc(x.q)}</b><small>✓ ${esc(x.o[0])}</small></div><button class="btn ghost" data-edit="${x.id}">Edit</button></div>`).join("");
+  return`<section class="card">
+   <div class="edhead"><div><div class="eyebrow">Admin</div><h2 style="font-size:1.6rem;margin:4px 0 0">Question bank · ${BANK.length}</h2></div>
+    <div class="edtools"><button class="btn ghost" id="edBack">← Back to setup</button><button class="btn gold" id="edAdd">+ Add question</button></div></div>
+   <div class="edtools" style="margin-bottom:12px"><div class="seg" role="group" aria-label="Filter by mission"><button data-edcat="all" aria-pressed="${ED.cat==="all"}">All ${BANK.length}</button>${counts}</div>
+    <input type="search" id="edFind" placeholder="Search questions" value="${esc(ED.find)}"></div>
+   <div class="qlist">${ED.open==="new"?edFormHTML(ED.draft,true):""}${rows||'<p class="muted">No questions match.</p>'}</div>
+   <div class="edtools" style="margin-top:16px;border-top:1px solid var(--line2);padding-top:14px">
+    <button class="btn ghost" id="edExport">Download questions (file)</button>
+    <button class="btn ghost" id="edImport">Load questions from file</button><input type="file" id="edFile" accept=".json,application/json" hidden>
+    <button class="btn warn" id="edReset">${ED.arm==="reset"?"Tap again to restore the original 47":"Restore original questions"}</button></div>
+   <p class="muted" style="margin:10px 0 0;font-size:.85rem">Edits are saved on this device and sent to everyone in the game. Download a file to keep a backup or to use your questions on another computer.</p></section>`;
+}
+function edRerender(){lastKey="";render()}
+function bindEditor(){
+  const v=$("#view"),on=(s,f)=>{const e=$(s);if(e)e.onclick=f};
+  on("#edBack",()=>{VIEW="board";ED.open=null;edRerender();renderTop()});
+  on("#edAdd",()=>{ED.open="new";ED.draft=blankQ();ED.arm="";edRerender();scrollTo(0,0)});
+  v.querySelectorAll("[data-edcat]").forEach(b=>b.onclick=()=>{ED.cat=b.dataset.edcat;edRerender()});
+  const fd=$("#edFind");if(fd)fd.oninput=debounce(()=>{ED.find=fd.value;edRerender();const n=$("#edFind");if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250);
+  v.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const x=BANK.find(q=>q.id===b.dataset.edit);ED.open=x.id;ED.draft=clone(x);ED.arm="";edRerender()});
+  v.querySelectorAll("[data-f]").forEach(i=>{i.oninput=i.onchange=()=>{const k=i.dataset.f;ED.draft[k]=k==="l"?+i.value:i.value}});
+  v.querySelectorAll("[data-o]").forEach(i=>i.oninput=()=>{ED.draft.o[+i.dataset.o]=i.value});
+  on("#edCancel",()=>{ED.open=null;ED.draft=null;edRerender()});
+  on("#edSave",()=>{const d=ED.draft;d.q=d.q.trim();d.o=d.o.map(o=>o.trim());
+    if(!d.q){toast("Add the question","The question text can’t be empty.","#ec6c60");return}
+    if(d.o.some(o=>!o)){toast("Fill in all 4 answers","One correct answer and three wrong ones.","#ec6c60");return}
+    if(new Set(d.o.map(o=>o.toLowerCase())).size<4){toast("Answers must differ","Each of the 4 answers needs to be different.","#ec6c60");return}
+    const list=BANK.slice(),i=list.findIndex(x=>x.id===d.id);if(i>=0)list[i]=d;else list.unshift(d);
+    saveBank(list,i>=0?"Question updated":"Question added");ED.open=null;ED.draft=null;edRerender()});
+  on("#edDel",()=>{if(ED.arm!=="del"){ED.arm="del";edRerender();return}
+    if(BANK.length<=1){toast("Keep at least one question","","#ec6c60");return}
+    saveBank(BANK.filter(x=>x.id!==ED.draft.id),"Question deleted");ED.open=null;ED.draft=null;ED.arm="";edRerender()});
+  on("#edReset",()=>{if(ED.arm!=="reset"){ED.arm="reset";edRerender();setTimeout(()=>{if(ED.arm==="reset"){ED.arm="";if(VIEW==="editor")edRerender()}},4000);return}
+    ED.arm="";try{localStorage.removeItem(BANK_KEY)}catch(e){}applyBank(RAW);BANK_CUSTOM=false;if(B&&B.saveBank)B.saveBank(BANK);toast("Original questions restored","");edRerender()});
+  on("#edExport",()=>{const blob=new Blob([JSON.stringify({app:"islamic-knowledge-quest",version:1,questions:BANK},null,1)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="quest-questions.json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)});
+  on("#edImport",()=>$("#edFile").click());
+  const ef=$("#edFile");if(ef)ef.onchange=async()=>{const file=ef.files[0];if(!file)return;
+    try{const data=JSON.parse(await file.text());const list=(Array.isArray(data)?data:data.questions||[]).filter(validQ);
+      if(!list.length)throw new Error("empty");saveBank(list,"Loaded "+list.length+" questions");edRerender()}
+    catch(e){toast("Couldn’t read that file","Choose a questions file downloaded from this game.","#ec6c60")}};
+}
+
 /* ---------------- entry (host or join) ---------------- */
 let entryBusy=false;
 function entryHTML(){
@@ -856,6 +966,8 @@ async function enterRoom(code,fresh){
   B.watchState(onState);
   if(isHost())B.watchAnswers(a=>{ANS=a||{};engineAnswers();render()});
   B.watchMine(d=>{if(d)MY=d;render()});
+  if(isHost())B.saveBank(BANK);
+  else B.watchBank(list=>{applyBank(list||RAW);lastKey="";render()});
   if(isHost()&&fresh){S=defaultState();hostSave()}
   renderTop();render();
 }
