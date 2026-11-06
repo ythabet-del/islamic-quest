@@ -1,0 +1,1044 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Islamic Knowledge Quest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;700&family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&text=%EF%B7%BA&display=swap">
+<style>
+/* Layout concept: an Iznik tile wall. A 40-facet rosette (5 rings x 8 arms, one facet per question)
+   is the progress record; five pointed-arch gates are the missions; a tile frieze frames each screen.
+   Deliberately one bright look in every viewer theme. */
+:root {
+  color-scheme: light;
+  --ink: #0B2545;
+  --ink-soft: #40566F;
+  --ground: #ECFAF7;
+  --panel: #FFFFFF;
+  --line: #BFE3DC;
+  --prayer: #0A9B66;
+  --purity: #0596B7;
+  --seerah: #E79A00;
+  --scripture: #D92B4B;
+  --general: #1B4FD8;
+  --cobalt: #0A3AA8;
+  --gold: #FFC21A;
+  --good: #067A50;
+  --good-bg: #DDF8EC;
+  --bad: #C4213E;
+  --bad-bg: #FFE6EA;
+  --accent: var(--cobalt);
+  --display: "El Messiri", "Iowan Old Style", Georgia, serif;
+  --body: "Figtree", "Segoe UI", system-ui, -apple-system, "Amiri", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background-color: var(--ground);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cg fill='none' stroke='%23BFE9E0' stroke-width='1'%3E%3Crect x='20' y='20' width='32' height='32'/%3E%3Crect x='20' y='20' width='32' height='32' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E");
+  color: var(--ink);
+  font: 500 16px/1.55 var(--body);
+  font-variant-numeric: tabular-nums;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: var(--cobalt); }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+
+.frieze {
+  height: 48px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%230A3AA8'/%3E%3Cg fill='%23FFC21A'%3E%3Crect x='11' y='11' width='26' height='26'/%3E%3Crect x='11' y='11' width='26' height='26' transform='rotate(45 24 24)'/%3E%3C/g%3E%3Cg fill='%230596B7'%3E%3Crect x='17' y='17' width='14' height='14'/%3E%3Crect x='17' y='17' width='14' height='14' transform='rotate(45 24 24)'/%3E%3C/g%3E%3Ccircle cx='24' cy='24' r='3.5' fill='%23fff'/%3E%3Cg fill='%23D92B4B'%3E%3Cpath d='M0 0h8L0 8zM48 0v8l-8-8zM48 48h-8l8-8zM0 48v-8l8 8z'/%3E%3C/g%3E%3C/svg%3E") repeat-x center / 48px 48px;
+}
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.stack { display: grid; gap: 24px; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 24px; align-items: center; }
+.hero-copy { display: grid; gap: 14px; min-width: 0; }
+.hero-ar { font: 700 1.3rem/1.5 var(--display); color: var(--prayer); }
+.hero h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); color: var(--cobalt); font-weight: 700; }
+.hero-lead { font-size: 1.1rem; max-width: 34em; color: var(--ink); }
+.rosette { width: 100%; max-width: 380px; margin-inline: auto; display: block; height: auto; }
+.rosette polygon { stroke: #fff; stroke-width: 1.6; stroke-linejoin: round; transition: fill .4s, opacity .4s; }
+.rosette .off { opacity: .3; }
+@keyframes facet { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.rosette .fresh { animation: facet .9s ease-in-out 3; }
+
+/* Player stats */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--panel); border: 2px solid var(--cobalt); border-radius: 6px; }
+.stat { padding: 12px 16px; min-width: 0; border-left: 1px solid var(--line); }
+.stat:first-child { border-left: 0; }
+.stat dt, .label { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+.stat dd { margin: 2px 0 0; font: 700 1.5rem/1.2 var(--display); color: var(--ink); overflow-wrap: anywhere; }
+.statwrap { display: grid; gap: 8px; }
+.savenote { font-size: .875rem; color: var(--ink-soft); }
+
+/* Mission gates */
+.section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.section-head h2 { font-size: 1.8rem; color: var(--ink); }
+.gates { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.gate {
+  display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; text-align: left;
+  background: var(--panel); border: 2px solid var(--mc); border-radius: 6px; padding: 12px; min-width: 0;
+  transition: transform .15s, box-shadow .15s;
+}
+.gate:hover { transform: translateY(-4px); box-shadow: 0 8px 0 var(--mc); }
+.gate svg.arch { width: 100%; max-width: 150px; height: auto; display: block; margin-inline: auto; }
+.gate h3 { font-size: 1.3rem; }
+.gate .ar { font: 500 1rem/1.5 var(--display); color: var(--mc-text, var(--mc)); }
+.gate p { font-size: .9rem; color: var(--ink-soft); line-height: 1.4; }
+.gate-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: .85rem; font-weight: 700; }
+.stars { display: inline-flex; gap: 3px; }
+.star { width: 18px; height: 18px; fill: #D5E5E1; }
+.star.on { fill: var(--gold); stroke: #A86F00; stroke-width: .8; }
+.bigstars .star { width: 44px; height: 44px; }
+
+/* Live round banner */
+.liveband { background: var(--cobalt); color: #fff; border-radius: 6px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+.liveband > div:first-child { flex: 1 1 280px; min-width: 0; display: grid; gap: 4px; }
+.liveband h2 { font-size: 1.6rem; color: #fff; }
+.liveband p { color: #E4ECFF; }
+.livecount { font: 700 2.2rem/1 var(--display); color: var(--gold); min-width: 2.5ch; text-align: center; }
+.livecount small { display: block; font: 700 .7rem/1.4 var(--body); letter-spacing: .07em; text-transform: uppercase; color: #E4ECFF; }
+
+/* Buttons */
+.btn { border: 0; border-radius: 6px; padding: 12px 22px; font-weight: 700; min-height: 48px; background: var(--prayer); color: #fff; box-shadow: 0 3px 0 #06613F; transition: transform .1s; }
+.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #06613F; }
+.btn.gold { background: var(--gold); color: var(--ink); box-shadow: 0 3px 0 #A86F00; }
+.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--ink); box-shadow: none; }
+.btn.small { min-height: 40px; padding: 7px 14px; font-size: .9rem; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Info panels */
+details.info { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+details.info summary { padding: 14px 16px; font: 700 1.15rem/1.3 var(--display); cursor: pointer; }
+.info-body { padding: 0 16px 16px; display: grid; gap: 12px; max-width: 72ch; }
+.info-body h3 { font: 700 1rem/1.3 var(--body); }
+.srcgroup { display: grid; gap: 6px; }
+.srclist { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .9rem; }
+.note-foot { font-size: .875rem; color: var(--ink-soft); max-width: 72ch; }
+
+/* Play screen */
+.play { max-width: 760px; margin-inline: auto; display: grid; gap: 16px; }
+.hud { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hud-left { display: grid; min-width: 0; flex: 1 1 200px; }
+.hud-left strong { font: 700 1.25rem/1.25 var(--display); color: var(--mc-text, var(--mc)); }
+.hud-stats { display: flex; gap: 16px; align-items: center; }
+.hud-num { display: grid; text-align: right; }
+.hud-num b { font: 700 1.3rem/1.1 var(--display); }
+.pips { display: flex; gap: 4px; }
+.pip { flex: 1; height: 10px; background: #D5E5E1; transform: skewX(-20deg); }
+.pip.now { background: var(--ink); }
+.pip.ok { background: var(--prayer); }
+.pip.no { background: var(--bad); }
+.card { background: var(--panel); border: 2px solid var(--mc); border-radius: 6px; padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.q-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+.q-text { font: 700 clamp(1.3rem, 3.6vw, 1.65rem)/1.3 var(--display); text-wrap: pretty; }
+.q-text:focus { outline: none; }
+.timer { position: relative; width: 68px; height: 68px; flex: none; }
+.timer svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.timer circle { fill: none; stroke-width: 7; }
+.timer .track { stroke: #D5E5E1; }
+.timer .fill { stroke: var(--mc); stroke-linecap: round; }
+.timer.low .fill { stroke: var(--bad); }
+.timer span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 1.3rem/1 var(--display); }
+.timer.low span { color: var(--bad); }
+.options { display: grid; gap: 10px; }
+.opt {
+  display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left;
+  min-height: 56px; padding: 9px 12px; background: var(--ground); border: 2px solid var(--line); border-radius: 6px; font-weight: 600;
+  transition: border-color .12s, background .12s;
+}
+.opt:hover:not(:disabled) { border-color: var(--mc); background: #fff; }
+.opt:disabled { cursor: default; }
+.opt .key { width: 32px; height: 32px; display: grid; place-items: center; background: #fff; border: 2px solid var(--mc); font: 700 .95rem/1 var(--body); transform: rotate(45deg); }
+.opt .key i { font-style: normal; transform: rotate(-45deg); }
+.opt.right { background: var(--good-bg); border-color: var(--good); }
+.opt.right .key { background: var(--good); border-color: var(--good); color: #fff; }
+.opt.wrong { background: var(--bad-bg); border-color: var(--bad); }
+.opt.wrong .key { background: var(--bad); border-color: var(--bad); color: #fff; }
+.opt.dim { opacity: .6; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.hintbox { background: #FFF6D6; border: 1px solid #E8BE3A; padding: 10px 14px; border-radius: 6px; }
+.reveal { border-top: 2px solid var(--line); padding-top: 14px; display: grid; gap: 10px; }
+.verdict { font: 700 1.3rem/1.2 var(--display); }
+.verdict.good { color: var(--good); }
+.verdict.bad { color: var(--bad); }
+.school { background: var(--ground); padding: 10px 14px; border-radius: 6px; font-size: .95rem; }
+.sources { font-size: .95rem; }
+.sources b { display: block; font-size: .75rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+.srcline { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.pop { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); font: 700 2.4rem/1 var(--display); color: var(--good); pointer-events: none; z-index: 30; animation: pop 1s ease-out forwards; }
+@keyframes pop { from { opacity: 0; margin-top: 16px; } 25% { opacity: 1; margin-top: 0; } to { opacity: 0; margin-top: -30px; } }
+
+/* Lobby and results */
+.lobby { text-align: center; justify-items: center; }
+.lobby .livecount { color: var(--cobalt); font-size: 4.4rem; }
+.lobby .livecount small { color: var(--ink-soft); }
+.clockchip { display: inline-block; padding: 3px 10px; border: 1px solid currentColor; border-radius: 99px; font-size: .8rem; font-weight: 700; }
+.results-top { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 24px; align-items: center; }
+.results-top h1 { font-size: clamp(2rem, 6vw, 3rem); color: var(--cobalt); }
+.tally { display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.tally div { display: grid; }
+.tally b { font: 700 1.9rem/1.15 var(--display); }
+.review { display: grid; gap: 10px; }
+.review-item { display: grid; gap: 6px; padding: 12px 14px; background: var(--ground); border-radius: 6px; font-size: .95rem; }
+.review-item strong { font-weight: 700; }
+.goodans { color: var(--good); font-weight: 700; }
+canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .rosette { max-width: 300px; }
+  .gates { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .gate { grid-template-columns: 76px minmax(0, 1fr); grid-template-rows: auto; column-gap: 14px; row-gap: 3px; }
+  .gate svg.arch { grid-row: 1 / span 4; align-self: center; }
+  .gate:hover { transform: none; box-shadow: none; }
+  .gate-foot { margin-top: 3px; }
+}
+@media (max-width: 560px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(odd) { border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .results-top { grid-template-columns: minmax(0, 1fr); }
+  .results-top .rosette { max-width: 220px; }
+  .card { padding: 16px; }
+  .q-top { gap: 10px; }
+  .hud-stats { width: 100%; justify-content: space-between; }
+  .hud-num { text-align: left; }
+  .timer { width: 58px; height: 58px; }
+  .btnrow .btn { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="frieze" aria-hidden="true"></div>
+<main class="wrap" id="app"></main>
+<div class="frieze" aria-hidden="true"></div>
+<canvas id="fx" hidden aria-hidden="true"></canvas>
+
+<script>
+/* ---------- Source helpers ---------- */
+const COLLECTIONS = {
+  bukhari: 'Sahih al-Bukhari', muslim: 'Sahih Muslim',
+  abudawud: 'Sunan Abi Dawud', tirmidhi: "Jami' at-Tirmidhi"
+};
+function Q(ref) {
+  const [s, v] = ref.split(':');
+  return { label: "Qur’an " + ref, url: `https://quran.com/${s}/${v}` };
+}
+function H(col, num, suffix = '', grade = '') {
+  return {
+    label: `${COLLECTIONS[col]} ${num}${grade ? ' (' + grade + ')' : ''}`,
+    url: `https://sunnah.com/${col}:${num}${suffix}`
+  };
+}
+
+/* ---------- Missions and questions. o[0] is always the correct option; options are shuffled at display. ---------- */
+const MISSIONS = [
+  { id: 'prayer', name: 'Prayer', ar: 'الصلاة', color: 'var(--prayer)', hex: '#0A9B66', blurb: 'Times, rak‘ahs, mistakes and missed prayers.', icon: 'dome' },
+  { id: 'purity', name: 'Purification', ar: 'الطهارة', color: 'var(--purity)', hex: '#0596B7', blurb: 'Wudu, ghusl, tayammum and common doubts.', icon: 'drop' },
+  { id: 'seerah', name: 'Seerah', ar: 'السيرة', color: 'var(--seerah)', textColor: '#8A5A00', hex: '#E79A00', blurb: 'From Cave Hira to the Farewell Hajj.', icon: 'route' },
+  { id: 'scripture', name: 'Scriptures', ar: 'القرآن والسنة', color: 'var(--scripture)', hex: '#D92B4B', blurb: 'The Qur’an, its preservation and hadith.', icon: 'book' },
+  { id: 'general', name: 'General Knowledge', ar: 'معارف عامة', color: 'var(--general)', hex: '#1B4FD8', blurb: 'Pillars, belief and daily Muslim life.', icon: 'star' }
+];
+
+const BANK = {
+  prayer: [
+    { t: 'How does the Qur’an describe the obligatory prayer in Surah an-Nisa?',
+      o: ['A duty decreed for believers at specified times', 'A duty to be performed once a day at any hour', 'A practice recommended only during Ramadan', 'A duty that applies only when praying in a mosque'],
+      h: 'Think about why prayer timetables exist.',
+      e: 'The verse says prayer has been decreed upon the believers at specified times. This is why each of the five prayers has its own window in the day.',
+      s: [Q('4:103')] },
+    { t: 'A well-known hadith says a prayer is not valid without reciting which surah?',
+      o: ['Al-Fatihah', 'Al-Ikhlas', 'Al-Baqarah', 'An-Nas'],
+      h: 'It is the opening chapter of the Qur’an.',
+      e: 'The Prophet ﷺ said that whoever does not recite the Opening of the Book has not prayed. This is why al-Fatihah is learned first.',
+      n: 'Schools differ on the details. The Shafi‘i and Hanbali schools treat al-Fatihah as a pillar of each rak‘ah. The Hanafi school requires reciting some Qur’an and ranks al-Fatihah as wajib. Schools also differ on what a person following an imam recites.',
+      s: [H('bukhari', 756), H('muslim', 394, 'a')] },
+    { t: 'Which of the five daily prayers has three obligatory rak‘ahs?',
+      o: ['Maghrib', 'Fajr', 'Asr', 'Isha'],
+      h: 'It is prayed just after sunset.',
+      e: 'Maghrib has three rak‘ahs. Fajr has two, while Dhuhr, Asr and Isha have four each when a person is not travelling. The hadith cited mentions the three rak‘ahs of Maghrib alongside the shortened Isha of a traveller.',
+      s: [H('bukhari', 1091)] },
+    { t: 'You are praying and cannot remember whether you have prayed three rak‘ahs or four. What does the hadith in Sahih Muslim instruct?',
+      o: ['Set aside the doubt, build on what you are sure of, and make two extra prostrations', 'Stop at once, make a fresh intention and begin the whole prayer again from the start', 'Assume you prayed four, finish normally, and ask forgiveness after the prayer is over', 'Finish the prayer as normal, then repeat the whole prayer at the next prayer time'],
+      h: 'Certainty counts. Then there is something extra to do near the end of the prayer.',
+      e: 'If you are unsure, go with the number you are certain of, which is the lower one, complete the prayer, and make two extra prostrations called sujud as-sahw.',
+      n: 'Schools differ on some details, such as when these prostrations come before or after the salam, and the Hanafi school adds guidance for acting on your stronger impression.',
+      s: [H('muslim', 571, 'a')] },
+    { t: 'What should a person do if they forget a prayer and remember it after its time has passed?',
+      o: ['Pray it as soon as they remember', 'Wait and pray it at the same time the next day', 'Give charity in place of the prayer', 'Nothing, since the time has already passed'],
+      h: 'The hadith says there is no expiation except one simple act.',
+      e: 'The Prophet ﷺ said that whoever forgets a prayer should pray it when they remember, and that there is no expiation other than that.',
+      s: [H('bukhari', 597), H('muslim', 684, 'a')] },
+    { t: 'What did the Prophet ﷺ tell a companion who was unwell and asked how to pray?',
+      o: ['Pray standing; if you cannot, then sitting; if you cannot, then on your side', 'Stop praying until you have recovered, then make up all of the missed prayers', 'Pray standing only, even when it is very difficult, since standing is a pillar', 'Combine all five prayers into a single sitting once a day until you have recovered'],
+      h: 'The answer is a sequence that adapts to what the person is able to do.',
+      e: 'Prayer remains, and its form adapts to what you can do. The Prophet ﷺ gave this guidance to Imran ibn Husayn, who had a painful condition.',
+      s: [H('bukhari', 1117)] },
+    { t: 'According to the hadith, prayer begins with takbir. How does it end?',
+      o: ['With taslim (saying the salam)', 'With a final prostration', 'With raising both hands', 'With reciting al-Fatihah'],
+      h: 'It is a greeting of peace.',
+      e: 'Ali reported that the key to prayer is purification, it begins with takbir and it ends with taslim, so "As-salamu alaykum wa rahmatullah" closes the prayer.',
+      n: 'The major schools all teach the salam. The Hanafi school ranks it as wajib, just below a pillar, while the other three treat it as a pillar.',
+      s: [H('abudawud', 61, '', 'graded hasan sahih by al-Albani'), H('tirmidhi', 3, '', 'graded hasan sahih by al-Albani')] },
+    { t: 'When the call to the Friday prayer is made, what does Surah al-Jumu‘ah tell believers to leave aside?',
+      o: ['Trade', 'Travel', 'Fasting', 'Reciting the Qur’an'],
+      h: 'The verse is addressing people in the marketplace.',
+      e: 'Believers are told to hurry to the remembrance of Allah and leave trade, because that is better for them.',
+      n: 'Mainstream scholars hold Jumu‘ah to be obligatory on adult resident men. Women and travellers may attend, and otherwise pray Dhuhr.',
+      s: [Q('62:9')] }
+  ],
+  purity: [
+    { t: 'Which actions does the wudu verse in Surah al-Ma‘idah name?',
+      o: ['Wash the face and arms to the elbows, wipe the head, wash the feet to the ankles', 'Wash the whole body from head to foot, beginning with the right side', 'Wash the hands and mouth three times, then wipe over the top of the feet', 'Wash the face, wipe the arms and the neck, then wash the feet to the ankles'],
+      h: 'The verse names four parts of the body.',
+      e: 'Qur’an 5:6 names these four acts. Rinsing the mouth and nose and washing the hands first come from the Prophet’s ﷺ own wudu, as in the hadith of Uthman.',
+      n: 'This describes the position of the four Sunni schools. They differ on a few details, including how much of the head must be wiped.',
+      s: [Q('5:6'), H('bukhari', 159)] },
+    { t: 'You need to pray but truly have no water, or using it would harm you. What does the Qur’an allow?',
+      o: ['Tayammum, using clean earth', 'Skipping that prayer entirely', 'Praying without any form of purification', 'Wiping with a clean cloth'],
+      h: 'The word for it means to aim for or turn to something from the ground.',
+      e: 'Tayammum means touching clean earth with the hands and passing them over the face and hands. The Prophet ﷺ showed Ammar ibn Yasir how to do it.',
+      n: 'Schools differ on the details. Some teach one strike on the ground and wiping to the wrists, others two strikes and wiping to the elbows.',
+      s: [Q('5:6'), Q('4:43'), H('bukhari', 338)] },
+    { t: 'During prayer you wonder whether you broke your wudu, but you are not sure. What is the guidance from the hadith?',
+      o: ['Carry on unless you are certain, such as hearing a sound or noticing a smell', 'Stop right away, make wudu again, and then start the prayer over from the beginning', 'Finish the prayer, then repeat it afterwards to be safe, as doubt cancels the wudu', 'Make one extra prostration as soon as the doubt arises, then carry on praying'],
+      h: 'Certainty is not removed by a passing doubt.',
+      e: 'The Prophet ﷺ told a man with this worry not to leave the prayer unless he heard a sound or noticed a smell. This is a great help to anyone troubled by repeated doubts.',
+      n: 'The Maliki school treats some doubts outside of prayer more cautiously, so ask a teacher if this affects you often.',
+      s: [H('bukhari', 137), H('muslim', 362)] },
+    { t: 'Which situation calls for ghusl (washing the whole body) rather than wudu alone?',
+      o: ['The state of major ritual impurity (janabah)', 'Waking up from a short nap during the day', 'Eating a full meal', 'Passing wind'],
+      h: 'The Qur’an mentions this state directly in the wudu verse.',
+      e: 'Qur’an 5:6 says that a person in the state of janabah must purify themselves, and 4:43 refers to washing the body. Purifying after menstruation is mentioned in 2:222.',
+      s: [Q('5:6'), Q('4:43'), Q('2:222')] },
+    { t: 'What condition did the Prophet ﷺ mention when he wiped over his khuffs (leather socks) instead of washing his feet?',
+      o: ['He had put them on after performing wudu', 'They were brand new', 'He was unable to find any water', 'He was wearing them only for that one prayer'],
+      h: 'It concerns the state of his feet when the socks went on.',
+      e: 'Al-Mughirah went to remove the Prophet’s ﷺ khuffs and was told to leave them, because they had been put on after wudu. Another report gives a limit of one day and night for a resident, and three for a traveller.',
+      n: 'Scholars differ on whether ordinary cloth socks count, and the Maliki school differs on the time limit.',
+      s: [H('bukhari', 206), H('muslim', 276, 'a')] },
+    { t: 'In the hadith from Sahih Muslim, purification is described as what portion of faith?',
+      o: ['Half', 'A tenth', 'A quarter', 'The whole'],
+      h: 'It is a very large share.',
+      e: 'The Prophet ﷺ said that purification is half of faith. This shows the spiritual value of what might otherwise look like a simple routine.',
+      s: [H('muslim', 223)] },
+    { t: 'Sailors asked whether they could make wudu with seawater, as their drinking water was limited. What was the answer?',
+      o: ['Yes, its water is pure', 'No, salt water can never be used', 'Only if no rain water can be collected', 'Only if it is boiled first'],
+      h: 'The reply was short and practical.',
+      e: 'The Prophet ﷺ replied that the water of the sea is pure and what dies in it is lawful. Ordinary natural water such as sea, rain and river water is suitable for wudu.',
+      s: [H('abudawud', 83, '', 'graded sahih by al-Albani'), H('tirmidhi', 69, '', 'graded sahih by al-Albani')] },
+    { t: 'How many times must each limb be washed in wudu for it to be valid?',
+      o: ['Once is enough; three times is the fuller Sunnah', 'Exactly three times, or the wudu is invalid', 'Twice for the arms and once for all of the other limbs', 'Seven times each'],
+      h: 'Ibn Abbas and Uthman each reported a different number from the Prophet ﷺ.',
+      e: 'Ibn Abbas reported that the Prophet ﷺ made wudu washing each part once, and Uthman described washing three times. Washing once meets the requirement, and up to three times carries more reward.',
+      s: [H('bukhari', 157), H('bukhari', 159)] }
+  ],
+  seerah: [
+    { t: 'What was the first command revealed to the Prophet ﷺ in Cave Hira?',
+      o: ['Recite in the name of your Lord', 'Pray five times a day', 'Migrate to Madinah', 'Fast during Ramadan'],
+      h: 'It is the opening of Surah al-Alaq.',
+      e: 'Aisha reported that the angel came to the Prophet ﷺ in Cave Hira and taught him the opening verses of Surah al-Alaq.',
+      s: [Q('96:1-5'), H('bukhari', 3), H('muslim', 160, 'a')] },
+    { t: 'After the first revelation, who comforted the Prophet ﷺ and took him to Waraqah ibn Nawfal?',
+      o: ['Khadijah', 'Aisha', 'Abu Talib', 'Abu Bakr'],
+      h: 'She was his wife at the time and Waraqah was her cousin.',
+      e: 'Khadijah reassured him by naming his good character: he kept family ties, helped the weak and welcomed guests. She then took him to her Christian cousin Waraqah, who knew the earlier scriptures.',
+      s: [H('bukhari', 3)] },
+    { t: 'When Muslims faced persecution in Makkah, some migrated to a land ruled by a king known as the Negus. Which land?',
+      o: ['Abyssinia (Ethiopia)', 'Persia', 'Yemen', 'Egypt'],
+      h: 'It lies across the Red Sea from Arabia.',
+      e: 'Early Muslims found protection in Abyssinia. When the Negus later died, the Prophet ﷺ told his companions that a righteous man had died and asked them to offer the funeral prayer for him.',
+      s: [H('bukhari', 3905), H('bukhari', 3877)] },
+    { t: 'After a harsh rejection, the angel of the mountains offered to crush the people who had refused him. How did the Prophet ﷺ respond?',
+      o: ['He declined, hoping their descendants would worship Allah alone', 'He accepted and asked for it to be done at once, as they had rejected the message', 'He asked for a delay of one year so they could have more time to reconsider', 'He asked that only their leaders be punished and the rest of them be spared'],
+      h: 'He looked ahead to future generations.',
+      e: 'The Prophet ﷺ told Aisha this was one of his hardest days. His answer shows mercy even toward people who had hurt him. Biographers place these events at Ta‘if.',
+      s: [H('bukhari', 3231), H('muslim', 1795)] },
+    { t: 'The five daily prayers were given to the Prophet ﷺ during which event?',
+      o: ['The Night Journey and Ascension (al-Isra wal-Mi‘raj)', 'The victory at the Battle of Badr', 'The Hijrah from Makkah to Madinah', 'The Farewell Hajj at the end of his life'],
+      h: 'It is the event mentioned at the start of Surah al-Isra.',
+      e: 'The hadith describes fifty prayers being reduced to five that carry the reward of fifty. Qur’an 17:1 mentions the journey from al-Masjid al-Haram to al-Masjid al-Aqsa.',
+      s: [Q('17:1'), H('bukhari', 349), H('muslim', 162, 'a')] },
+    { t: 'During the Hijrah, who hid with the Prophet ﷺ in the Cave of Thawr?',
+      o: ['Abu Bakr', 'Umar ibn al-Khattab', 'Ali ibn Abi Talib', 'Bilal'],
+      h: 'The Qur’an refers to him as the companion, one of "two in the cave". His daughter wrote the hadith that describes it.',
+      e: 'Qur’an 9:40 describes the Prophet ﷺ telling his companion not to grieve, for Allah was with them. Aisha, Abu Bakr’s daughter, reports that they stayed in the cave for three nights.',
+      s: [Q('9:40'), H('bukhari', 3905)] },
+    { t: 'Under the Treaty of Hudaybiyyah, what happened to the Muslims’ plan to perform Umrah that year?',
+      o: ['It was put off, and they were to return the following year', 'They completed it the same week, as the Quraysh gave way', 'They were banned from Makkah permanently under the treaty', 'It was replaced by a Hajj that same month, at their request'],
+      h: 'The Quraysh did not want the Arabs to say they had been forced to give way.',
+      e: 'Suhayl, speaking for the Quraysh, asked that the Muslims come back the next year. Some of the terms seemed hard at first, yet peace opened the way for Islam to spread.',
+      s: [H('bukhari', 2731)] },
+    { t: 'Where was the Prophet ﷺ when the verse "This day I have perfected your religion for you" was revealed?',
+      o: ['Standing at Arafat during Hajj', 'In the Cave of Hira', 'In his mosque in Madinah during Jumu‘ah', 'At Hudaybiyyah'],
+      h: 'Umar remembered the place and the day: a Friday during Hajj.',
+      e: 'Umar confirmed that Qur’an 5:3 was revealed on a Friday, while the Prophet ﷺ was standing at Arafat during his final Hajj.',
+      s: [Q('5:3'), H('bukhari', 45), H('muslim', 3017, 'a')] }
+  ],
+  scripture: [
+    { t: 'According to the Qur’an, the Zabur (Psalms) was given to which prophet?',
+      o: ['Dawud (David)', 'Musa (Moses)', 'Isa (Jesus)', 'Ibrahim (Abraham)'],
+      h: 'He was also a king, and his son was Sulayman.',
+      e: 'The Qur’an names the book given to Dawud. It also speaks of the Tawrah revealed through Musa and the Injil given to Isa. Believing in the earlier revealed books is part of Muslim faith.',
+      s: [Q('4:163'), Q('17:55'), Q('5:44'), Q('5:46')] },
+    { t: 'What does Allah say about the Qur’an in Surah al-Hijr, verse 9?',
+      o: ['He sent it down and He will guard it', 'It will be replaced by a later book', 'It was revealed only for the people of Arabia', 'It will be understood only by scholars'],
+      h: 'It is a promise about keeping the Qur’an safe.',
+      e: 'Allah says that He sent down the Reminder and will be its guardian. Muslims see the memorisation and careful recording of the text across generations as part of how this promise is fulfilled.',
+      s: [Q('15:9')] },
+    { t: 'People asked why the Qur’an was not revealed all at once. What reason does Surah al-Furqan give?',
+      o: ['To strengthen the heart of the Prophet ﷺ', 'Because writing materials were scarce', 'Because the Arabs had asked for it to be slow', 'To keep it secret for as long as possible'],
+      h: 'The reason concerns the one receiving it.',
+      e: 'Qur’an 25:32 answers this objection directly. The revelation came in stages over about twenty-three years, supporting the Prophet ﷺ and the community as events unfolded.',
+      s: [Q('25:32')] },
+    { t: 'In which month did the revelation of the Qur’an begin, according to the Qur’an?',
+      o: ['Ramadan', 'Muharram', 'Dhul-Hijjah', 'Rajab'],
+      h: 'It is also the month of obligatory fasting.',
+      e: 'Qur’an 2:185 names Ramadan as the month in which the Qur’an was sent down, and Surah al-Qadr speaks of the Night of Decree.',
+      s: [Q('2:185'), Q('97:1')] },
+    { t: 'What role does Surah an-Nahl give the Prophet ﷺ in relation to the Qur’an?',
+      o: ['To make clear to people what was sent down to them', 'To change its rulings whenever circumstances call for it', 'To keep its deeper meaning for a chosen few among them', 'Only to deliver it, with no explanation'],
+      h: 'This verse is one reason why Muslims need hadith to understand the Qur’an.',
+      e: 'Qur’an 16:44 gives the Prophet ﷺ the task of explaining the revelation. For example, the Qur’an commands prayer, and the Sunnah shows how to perform it.',
+      s: [Q('16:44')] },
+    { t: 'Which verse did the Prophet ﷺ confirm to Ubayy ibn Ka‘b as the greatest in the Book of Allah?',
+      o: ['Ayat al-Kursi (2:255)', 'The last verse of Surah al-Baqarah (2:286)', 'The opening verse of Surah al-Fatihah (1:1)', 'The light verse (24:35)'],
+      h: 'It begins: "Allah, there is no deity except Him, the Ever-Living".',
+      e: 'Ubayy answered that it was the verse beginning "Allah, there is no deity except Him, the Ever-Living, the Sustainer". The Prophet ﷺ approved his answer and congratulated him on his knowledge.',
+      s: [Q('2:255'), H('muslim', 810)] },
+    { t: 'Which surah did the Prophet ﷺ describe as equal to one third of the Qur’an?',
+      o: ['Al-Ikhlas', 'Al-Fatihah', 'Ya-Sin', 'Al-Kafirun'],
+      h: 'It has four verses and begins "Say, He is Allah, the One".',
+      e: 'Al-Ikhlas is short yet centres on the oneness of Allah. Scholars explain this statement in terms of its meaning and reward; it does not replace reading the rest of the Qur’an.',
+      s: [Q('112:1'), H('bukhari', 5013), H('muslim', 811, 'a')] },
+    { t: 'After many memorisers died at the Battle of Yamamah, who was asked to collect the Qur’an into one compilation?',
+      o: ['Zayd ibn Thabit', 'Abu Hurayrah', 'Imam al-Bukhari', 'Khalid ibn al-Walid'],
+      h: 'He had written down revelation for the Prophet ﷺ.',
+      e: 'At Umar’s urging, Abu Bakr assigned this task to Zayd, who gathered the Qur’an from written materials and from people who had memorised it. Later, Uthman had standard copies sent out.',
+      s: [H('bukhari', 4986), H('bukhari', 4987)] }
+  ],
+  general: [
+    { t: 'Which of these is NOT one of the five pillars of Islam?',
+      o: ['Belief in the angels', 'Zakat', 'Fasting in Ramadan', 'Hajj'],
+      h: 'The odd one out is a pillar of faith (iman), not one of the five acts.',
+      e: 'The five pillars are the testimony of faith, prayer, zakat, Hajj and fasting Ramadan. Belief in the angels is a core belief listed separately in the hadith of Jibril.',
+      s: [H('bukhari', 8), H('muslim', 16, 'a'), H('muslim', 8, 'a')] },
+    { t: 'In the hadith of Jibril, which of these is named as part of faith (iman)?',
+      o: ['Belief in the divine decree (qadar)', 'Performing Hajj', 'Paying zakat', 'Praying five times a day'],
+      h: 'The other three are actions listed under Islam in the same hadith.',
+      e: 'Faith is defined as believing in Allah, His angels, His books, His messengers, the Last Day and the divine decree, both its good and its bad.',
+      s: [H('muslim', 8, 'a')] },
+    { t: 'How many categories of people entitled to zakat does Surah at-Tawbah list?',
+      o: ['Eight', 'Three', 'Five', 'Twelve'],
+      h: 'The list begins with the poor and the needy and ends with the stranded traveller.',
+      e: 'They are the poor, the needy, those who administer zakat, those whose hearts are being brought together, freeing captives, those in debt, the cause of Allah, and the traveller.',
+      s: [Q('9:60')] },
+    { t: 'What does the Qur’an say about someone who is ill or travelling during Ramadan?',
+      o: ['They may miss the fast and make up the same number of days later', 'They must fast regardless of hardship, as no exception is given', 'They lose the reward for the entire month but owe no make-up days', 'They must fast double the missed days after Ramadan has ended'],
+      h: 'Verse 185 of the same surah says that Allah intends ease.',
+      e: 'Qur’an 2:184-185 allows them to make up an equal number of days, and adds that Allah wants ease for you, not hardship.',
+      n: 'For people who cannot fast at all because of a long-term condition or old age, scholars point to the feeding of a poor person mentioned in 2:184.',
+      s: [Q('2:184'), Q('2:185')] },
+    { t: 'What did the Prophet ﷺ tell Amr ibn al-As about embracing Islam and the sins that came before?',
+      o: ['Islam wipes out what came before it', 'Past sins must be confessed publicly first', 'Past sins remain until after Hajj', 'Past sins are reduced by half'],
+      h: 'This is very good news for every new Muslim.',
+      e: 'Amr hesitated, worried about his past. The Prophet ﷺ told him that Islam wipes out everything before it. Qur’an 8:38 also speaks of past deeds being forgiven.',
+      n: 'Mainstream scholars add that a new Muslim does not make up prayers or fasts missed before accepting Islam, while debts and rights owed to other people still stand.',
+      s: [H('muslim', 121), Q('8:38')] },
+    { t: 'What is the Qur’anic guidance about parents who do not share your faith and urge you to leave it?',
+      o: ['Do not obey them in that, but keep treating them with kindness in this world', 'Cut off all contact with them until they accept your decision to follow Islam', 'Follow their wishes outwardly to keep the peace, while believing in your heart', 'Speak to them only when it is necessary, and keep your family ties to a minimum'],
+      h: 'The verse separates obeying from being kind. Asma’ bint Abu Bakr asked a related question about her own mother.',
+      e: 'Qur’an 31:15 keeps both duties in view. When Asma’ asked about her non-Muslim mother visiting her, the Prophet ﷺ told her to keep good relations with her.',
+      s: [Q('31:15'), H('bukhari', 2620), H('muslim', 1003, 'a')] },
+    { t: 'When someone greets you with salam, what does the Qur’an ask you to do?',
+      o: ['Reply with a better greeting, or at least return the same', 'Reply only if the person is older than you or a stranger', 'Reply only if the person is a Muslim you already know well', 'Reply silently in your heart'],
+      h: 'Surah an-Nisa sets a minimum and something better.',
+      e: 'If someone says "As-salamu alaykum", you might reply "Wa alaykum as-salam wa rahmatullah". At the very least, return the greeting in the same way.',
+      s: [Q('4:86')] },
+    { t: 'Qur’an 2:173 forbids certain foods, including pork. What does it say about someone forced by real necessity?',
+      o: ['There is no sin on them, provided they are not seeking it or going beyond need', 'They must fast three days afterwards to make up for having eaten it', 'They must never eat it, even when it is the only way to survive', 'They must pay a fixed amount of charity first, and only then may they eat'],
+      h: 'The verse ends by naming Allah as Forgiving and Merciful.',
+      e: 'The verse forbids carrion, blood, pork and what is dedicated to other than Allah, then makes an exception for genuine necessity. Islamic law has rules, and it also takes account of hardship.',
+      s: [Q('2:173')] }
+  ]
+};
+const ALL = [];
+MISSIONS.forEach(m => BANK[m.id].forEach((q, i) => { q.id = `${m.id}-${i}`; q.mid = m.id; ALL.push(q); }));
+const missionOf = id => MISSIONS.find(m => m.id === id);
+
+/* ---------- Tuning ---------- */
+const MISSION_MS = 45000, SLOT_MS = 45000, ANSWER_MS = 30000, LIVE_LEN = 5;
+const BASE = 100, SPEED_MAX = 50, STREAK_STEP = 10, STREAK_MAX = 30, HINT_COST = 30;
+const MAX_STARS = MISSIONS.length * 3;
+const RANKS = [[0, 'New Seeker'], [3, 'Seeker'], [7, 'Student'], [11, 'Steady Student'], [15, 'Quest Complete']];
+
+/* ---------- Saved progress ---------- */
+const KEY = 'ikq.progress.v1';
+const blank = () => ({ mastered: {}, missions: {}, live: { best: 0, correct: 0, plays: 0 } });
+function readLocal() {
+  try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.mastered) return Object.assign(blank(), v); } catch (e) {}
+  return blank();
+}
+function writeLocal() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); localOk = true; } catch (e) { localOk = false; }
+}
+let S = readLocal();
+let localOk = true;
+try { localStorage.setItem(KEY + '.t', '1'); localStorage.removeItem(KEY + '.t'); } catch (e) { localOk = false; }
+
+function merge(a, b) {
+  const out = blank();
+  Object.assign(out.mastered, a.mastered, b.mastered);
+  for (const m of MISSIONS) {
+    const x = a.missions[m.id], y = b.missions && b.missions[m.id];
+    if (x || y) out.missions[m.id] = {
+      best: Math.max(x?.best || 0, y?.best || 0), stars: Math.max(x?.stars || 0, y?.stars || 0),
+      correct: Math.max(x?.correct || 0, y?.correct || 0), plays: Math.max(x?.plays || 0, y?.plays || 0)
+    };
+  }
+  out.live = {
+    best: Math.max(a.live?.best || 0, b.live?.best || 0), correct: Math.max(a.live?.correct || 0, b.live?.correct || 0),
+    plays: Math.max(a.live?.plays || 0, b.live?.plays || 0)
+  };
+  return out;
+}
+
+/* Account storage: the viewer's private subtree in the artifact's database. Absent for signed-out or view-only visitors. */
+const cloud = { db: null, uid: null, ref: null, ok: false, writing: false, dirty: false };
+async function initCloud() {
+  if (!window.claude?.use) return;
+  try {
+    const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+    if (!db || !user) return;
+    const uid = await user.id();
+    if (!uid) return;
+    cloud.db = db; cloud.uid = uid;
+    cloud.ref = db.doc(`data/users/${uid}/progress`);
+    const snap = await cloud.ref.get();
+    cloud.ok = true;
+    if (snap.exists) { S = merge(S, snap.data()); writeLocal(); }
+    if (view === 'home') renderHome();
+  } catch (e) { cloud.ok = false; }
+}
+async function saveCloud() {
+  if (!cloud.ref || !cloud.ok) return;
+  if (cloud.writing) { cloud.dirty = true; return; }
+  cloud.writing = true;
+  try { await cloud.ref.set(JSON.parse(JSON.stringify(S))); }
+  catch (e) { cloud.ok = false; if (view === 'home') renderHome(); }
+  cloud.writing = false;
+  if (cloud.dirty) { cloud.dirty = false; saveCloud(); }
+}
+function saveAll() { writeLocal(); saveCloud(); }
+
+/* Shared clock. The lease expiry comes from the store, which gives a server reading of the time.
+   Falls back to the device clock when the store cannot answer. */
+const clock = { offset: 0, source: 'device', tried: false };
+const now = () => Date.now() + clock.offset;
+async function syncClock() {
+  if (clock.tried || !cloud.db || !cloud.uid) return;
+  clock.tried = true;
+  const TTL = 1000;
+  try {
+    const t0 = Date.now();
+    const r = await cloud.db.doc(`data/users/${cloud.uid}/clock`).acquire({ holder: 'clock-' + t0, ttlMs: TTL });
+    const t1 = Date.now();
+    const expires = r && r.acquired && Date.parse(r.expiresAt);
+    if (expires) { clock.offset = (expires - TTL) - (t0 + t1) / 2; clock.source = 'server'; }
+  } catch (e) { clock.tried = false; }
+}
+
+/* ---------- Helpers ---------- */
+function shuffle(arr, rand = Math.random) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function seeded(seed) {
+  let s = seed >>> 0;
+  return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+/* Same slot number gives the same question and the same answer order for every player. */
+function slotQuestion(slot) {
+  const cycle = Math.floor(slot / ALL.length);
+  const order = shuffle(ALL, seeded(cycle * 2654435761));
+  return { q: order[slot % ALL.length], order: shuffle([0, 1, 2, 3], seeded(slot * 40503 + 7)) };
+}
+const totalStars = () => MISSIONS.reduce((n, m) => n + (S.missions[m.id]?.stars || 0), 0);
+const totalPoints = () => MISSIONS.reduce((n, m) => n + (S.missions[m.id]?.best || 0), 0) + (S.live?.best || 0);
+const masteredCount = () => ALL.filter(q => S.mastered[q.id]).length;
+const rankName = () => RANKS.filter(r => totalStars() >= r[0]).pop()[1];
+const starsFor = correct => correct >= 8 ? 3 : correct >= 6 ? 2 : correct >= 4 ? 1 : 0;
+const starHTML = (n, of = 3, cls = '') => `<span class="stars ${cls}" role="img" aria-label="${n} of ${of} stars">${Array.from({ length: of }, (_, i) => `<svg class="star ${i < n ? 'on' : ''}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1l3 5.2 5.8-1.6L19.2 10.5 23 12l-3.8 1.5 1.6 5.9L15 17.8 12 23l-3-5.2-5.8 1.6 1.6-5.9L1 12l3.8-1.5L3.2 4.6 9 6.2z"/></svg>`).join('')}</span>`;
+const sourcesHTML = list => `<div class="srcline">${list.map(s => `<a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>`).join('')}</div>`;
+
+/* ---------- Rosette: 5 rings x 8 arms, one kite per question. Each ring interlocks with the next. ---------- */
+function rosetteSVG(fresh = {}) {
+  const R = [20, 36, 55, 75, 97, 121, 147];
+  const pt = (r, deg) => { const a = deg * Math.PI / 180; return `${(r * Math.cos(a)).toFixed(2)},${(r * Math.sin(a)).toFixed(2)}`; };
+  let out = '';
+  MISSIONS.forEach((m, ring) => {
+    const off = ring % 2 ? 22.5 : 0;
+    BANK[m.id].forEach((q, k) => {
+      const th = -90 + k * 45 + off;
+      const pts = [pt(R[ring], th), pt(R[ring + 1], th - 22.5), pt(R[ring + 2], th), pt(R[ring + 1], th + 22.5)].join(' ');
+      const on = S.mastered[q.id];
+      out += `<polygon points="${pts}" fill="${m.hex}" class="${on ? 'on' : 'off'} ${fresh[q.id] ? 'fresh' : ''}"/>`;
+    });
+  });
+  const star = [];
+  for (let k = 0; k < 8; k++) { star.push(pt(R[1], -90 + 22.5 + k * 45)); star.push(pt(R[0], -90 + 45 + k * 45)); }
+  const done = masteredCount() === ALL.length;
+  out += `<polygon points="${star.join(' ')}" fill="#FFC21A" class="${done ? 'on' : ''}" ${done ? '' : 'opacity=".55"'}/>`;
+  return `<svg class="rosette" viewBox="-152 -152 304 304" role="img" aria-label="Quest rosette: ${masteredCount()} of ${ALL.length} questions mastered. Each tile lights up when you answer its question correctly.">${out}</svg>`;
+}
+
+const ICONS = {
+  dome: '<path d="M6 21V12c0-3 3-5 6-8 3 3 6 5 6 8v9"/><path d="M3 21h18M10 21v-5a2 2 0 0 1 4 0v5"/>',
+  drop: '<path d="M12 3s7 7.2 7 12a7 7 0 0 1-14 0c0-4.8 7-12 7-12z"/><path d="M9 15a3 3 0 0 0 3 3"/>',
+  route: '<circle cx="6" cy="19" r="2"/><path d="M12 5l1.2 2.3 2.3-.700-.700 2.3L17 10l-2.2 1 .7 2.3-2.3-.700L12 15l-1.2-2.4-2.3.7.7-2.3L7 10l2.2-1.1-.700-2.3 2.3.7z"/><path d="M8 19h8a3 3 0 0 0 3-3v-2"/>',
+  book: '<path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/>',
+  star: '<rect x="6" y="6" width="12" height="12"/><rect x="6" y="6" width="12" height="12" transform="rotate(45 12 12)"/>'
+};
+function archSVG(m) {
+  const pid = 'tile-' + m.id;
+  return `<svg class="arch" viewBox="0 0 200 230" aria-hidden="true">
+    <defs><pattern id="${pid}" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="${m.hex}"/>
+      <g fill="#fff" fill-opacity=".35"><rect x="10" y="10" width="20" height="20"/><rect x="10" y="10" width="20" height="20" transform="rotate(45 20 20)"/></g>
+      <g fill="#FFC21A"><path d="M0 0h6L0 6zM40 0v6l-6-6zM40 40h-6l6-6zM0 40v-6l6 6z"/></g>
+    </pattern></defs>
+    <path d="M8 228V108C8 62 66 34 100 4c34 30 92 58 92 104v120z" fill="url(#${pid})" stroke="#0B2545" stroke-width="3"/>
+    <circle cx="100" cy="128" r="46" fill="#fff" stroke="${m.hex}" stroke-width="5"/>
+    <svg x="66" y="94" width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="${m.hex}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[m.icon]}</svg>
+  </svg>`;
+}
+
+/* ---------- Views ---------- */
+const app = document.getElementById('app');
+let view = 'home', run = null, ticker = null;
+function clearTicker() { if (ticker) { clearInterval(ticker); ticker = null; } }
+
+function saveNote() {
+  if (cloud.ok) return 'Your progress is saved to your account, privately, so it follows you between devices.';
+  if (localOk) return 'Your progress is saved in this browser only.';
+  return 'This browser is blocking storage, so your progress will end when you close the page.';
+}
+const secsToSlot = () => Math.ceil((SLOT_MS - (now() % SLOT_MS)) / 1000);
+
+function renderHome() {
+  view = 'home'; clearTicker(); run = null;
+  const complete = totalStars() === MAX_STARS;
+  const groups = MISSIONS.map(m => {
+    const seen = new Set(), items = [];
+    BANK[m.id].forEach(q => q.s.forEach(s => { if (!seen.has(s.url)) { seen.add(s.url); items.push(s); } }));
+    return `<div class="srcgroup"><h3>${m.name}</h3><ul class="srclist">${items.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a></li>`).join('')}</ul></div>`;
+  }).join('');
+  app.innerHTML = `<div class="stack">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="hero-ar" lang="ar" dir="rtl" style="text-align:left">رحلة طلب العلم</div>
+        <h1>Islamic Knowledge Quest</h1>
+        <p class="hero-lead">${complete ? 'You have earned every star. Alhamdulillah. Revisit any gate to keep this knowledge fresh.' : 'Five missions and forty questions for people building on the basics. Each answer comes with an explanation and a source you can check yourself. Each correct answer lights one tile of your rosette.'}</p>
+        <div class="btnrow">
+          <button class="btn gold" data-act="next-mission">${masteredCount() ? 'Continue the quest' : 'Begin Mission 1'}</button>
+          <button class="btn ghost" data-act="live">Join the Live Round</button>
+        </div>
+      </div>
+      ${rosetteSVG()}
+    </section>
+    <section class="statwrap" aria-label="Your progress">
+      <dl class="stats" style="margin:0">
+        <div class="stat"><dt>Rank</dt><dd>${rankName()}</dd></div>
+        <div class="stat"><dt>Points</dt><dd>${totalPoints().toLocaleString('en-US')}</dd></div>
+        <div class="stat"><dt>Stars</dt><dd>${totalStars()} / ${MAX_STARS}</dd></div>
+        <div class="stat"><dt>Mastered</dt><dd>${masteredCount()} / ${ALL.length}</dd></div>
+      </dl>
+      <p class="savenote">${saveNote()}</p>
+    </section>
+    <section class="stack" style="gap:14px" aria-labelledby="missions-h">
+      <div class="section-head"><h2 id="missions-h">Choose your gate</h2><span class="savenote">8 questions, 45 seconds each. All gates are open.</span></div>
+      <div class="gates">${MISSIONS.map(m => {
+        const p = S.missions[m.id];
+        return `<button class="gate" data-act="start" data-id="${m.id}" style="--mc:${m.color};--mc-text:${m.textColor || m.color}">
+          ${archSVG(m)}
+          <h3>${m.name}</h3>
+          <p>${m.blurb}</p>
+          <span class="ar" lang="ar">${m.ar}</span>
+          <span class="gate-foot">${starHTML(p?.stars || 0)}<span>${p ? 'Best ' + p.best : 'Not played'}</span></span>
+        </button>`;
+      }).join('')}</div>
+    </section>
+    <section class="liveband">
+      <div>
+        <h2>Live Round</h2>
+        <p>Five shared questions on one clock. The question, answer order and countdown are the same for anyone playing at that moment. You play and score alone.${S.live?.plays ? ' Your best: ' + S.live.best + ' points.' : ''}</p>
+      </div>
+      <div class="livecount" aria-live="off"><span id="home-count">${secsToSlot()}</span><small>sec to next question</small></div>
+      <button class="btn gold" data-act="live">Join</button>
+    </section>
+    <details class="info" id="how-panel"><summary>How scoring works</summary>
+      <div class="info-body">
+        <p><strong>Points.</strong> A correct answer earns ${BASE} points, up to ${SPEED_MAX} more for speed, and up to ${STREAK_MAX} more for a streak. Using a hint takes ${HINT_COST} off that question. Your total adds your best score from each mission and the Live Round.</p>
+        <p><strong>Stars.</strong> In a mission, 4 correct answers earn one star, 6 earn two, and all 8 earn three.</p>
+        <p><strong>Who checks your answers.</strong> Your browser checks your answers and adds up your score. No server checks them, and the answer key is part of this page. Treat your score as a learning aid and not as an exam result.</p>
+        <p><strong>The Live Round clock.</strong> The question, answer order and countdown are worked out from the current time. The page asks the server for the time when it can, and otherwise uses your device clock, which may be a few seconds off.</p>
+      </div>
+    </details>
+    <details class="info" id="src-panel"><summary>All sources</summary>
+      <div class="info-body">
+        <p>Links open Quran.com and Sunnah.com. Explanations are written in plain English and paraphrase the sources, so please read the originals. The references were checked against the text of each verse and hadith.</p>
+        ${groups}
+      </div>
+    </details>
+    <p class="note-foot">This is a learning aid that follows mainstream Sunni scholarship and notes some differences between the schools. For rulings about your own situation, please ask a qualified teacher you trust.</p>
+    <div id="reset-zone"><button class="btn ghost small" data-act="reset-ask">Erase my progress</button></div>
+  </div>`;
+  ticker = setInterval(() => { const el = document.getElementById('home-count'); if (el) el.textContent = secsToSlot(); }, 500);
+  window.scrollTo(0, 0);
+}
+
+/* Question screen, shared by missions and the Live Round. */
+function questionHTML(m, q, order) {
+  const letters = 'ABCD';
+  const isLive = run.kind === 'live';
+  const total = isLive ? LIVE_LEN : run.qs.length;
+  const pips = Array.from({ length: total }, (_, i) => {
+    const l = run.log[i];
+    return `<span class="pip ${l ? (l.ok ? 'ok' : 'no') : i === run.i ? 'now' : ''}"></span>`;
+  }).join('');
+  return `<div class="play" style="--mc:${m.color};--mc-text:${m.textColor || m.color}">
+    <div class="hud">
+      <div class="hud-left">
+        <span class="label">${isLive ? 'Live Round · ' + m.name : 'Mission ' + (MISSIONS.indexOf(m) + 1)}</span>
+        <strong>${isLive ? 'Question' : m.name + ' · Question'} ${run.i + 1} of ${total}</strong>
+      </div>
+      <div class="hud-stats">
+        <div class="hud-num"><span class="label">Streak</span><b id="hud-streak">${run.streak}</b></div>
+        <div class="hud-num"><span class="label">Score</span><b id="hud-score">${run.score}</b></div>
+        <button class="btn ghost small" data-act="quit">Leave</button>
+      </div>
+    </div>
+    <div class="pips" aria-hidden="true">${pips}</div>
+    <article class="card">
+      <div class="q-top">
+        <h2 class="q-text" tabindex="-1" id="q-text">${q.t}</h2>
+        <div class="timer" id="timer" role="timer" aria-label="Time left">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><circle class="track" cx="30" cy="30" r="26"/><circle class="fill" id="timer-fill" cx="30" cy="30" r="26" stroke-dasharray="163.4" stroke-dashoffset="0"/></svg>
+          <span id="timer-num"></span>
+        </div>
+      </div>
+      <div class="options" id="options">${order.map((idx, i) => `<button class="opt" id="opt-${idx}" data-act="answer" data-idx="${idx}"><span class="key"><i>${letters[i]}</i></span><span>${q.o[idx]}</span></button>`).join('')}</div>
+      <div class="toolbar" id="toolbar">
+        <button class="btn ghost small" id="hint-btn" data-act="hint">Show a hint (−${HINT_COST} points)</button>
+        <span class="savenote">Keys: 1 to 4 to answer, H for hint</span>
+      </div>
+      <div id="hint-slot"></div>
+      <div id="reveal-slot" aria-live="polite"></div>
+    </article>
+  </div>`;
+}
+function setTimer(remain, total, lowAt = 10000) {
+  const f = document.getElementById('timer-fill'), n = document.getElementById('timer-num'), t = document.getElementById('timer');
+  if (!f) return;
+  const frac = Math.max(0, remain / total);
+  f.setAttribute('stroke-dashoffset', (163.4 * (1 - frac)).toFixed(1));
+  n.textContent = Math.max(0, Math.ceil(remain / 1000));
+  t.classList.toggle('low', remain <= lowAt);
+}
+
+function startMission(id) {
+  const m = missionOf(id);
+  run = { kind: 'mission', m, qs: shuffle(BANK[id]), i: 0, score: 0, streak: 0, best: 0, log: [], fresh: {}, hintUsed: false, answered: false };
+  view = 'play';
+  showMissionQuestion();
+}
+function showMissionQuestion() {
+  clearTicker();
+  const q = run.qs[run.i];
+  run.q = q; run.hintUsed = false; run.answered = false;
+  run.total = MISSION_MS; run.deadline = Date.now() + MISSION_MS;
+  app.innerHTML = questionHTML(run.m, q, shuffle([0, 1, 2, 3]));
+  window.scrollTo(0, 0);
+  document.getElementById('q-text').focus({ preventScroll: true });
+  setTimer(MISSION_MS, MISSION_MS);
+  ticker = setInterval(() => {
+    const left = run.deadline - Date.now();
+    setTimer(left, MISSION_MS);
+    if (left <= 0) { clearTicker(); answer(null); }
+  }, 100);
+}
+
+function award(leftMs, totalMs) {
+  const speed = Math.round(SPEED_MAX * Math.max(0, leftMs) / totalMs);
+  const streakBonus = Math.min(STREAK_MAX, Math.max(0, run.streak - 1) * STREAK_STEP);
+  return Math.max(0, BASE + speed + streakBonus - (run.hintUsed ? HINT_COST : 0));
+}
+function answer(idx) {
+  if (!run || run.answered) return;
+  run.answered = true;
+  const q = run.q;
+  const ok = idx === 0;
+  let pts = 0;
+  if (ok) {
+    run.streak++;
+    const left = run.kind === 'live' ? ANSWER_MS - (now() % SLOT_MS) : run.deadline - Date.now();
+    pts = award(left, run.total);
+    run.score += pts;
+    if (!S.mastered[q.id]) { S.mastered[q.id] = 1; run.fresh[q.id] = 1; writeLocal(); }
+  } else {
+    run.streak = 0;
+  }
+  run.log[run.i] = { q, ok, idx, pts, hint: run.hintUsed };
+  if (run.kind === 'mission') clearTicker();
+  showReveal(idx, ok, pts);
+}
+function showReveal(idx, ok, pts) {
+  const q = run.q;
+  document.querySelectorAll('.opt').forEach(b => {
+    b.disabled = true;
+    const v = +b.dataset.idx;
+    if (v === 0) b.classList.add('right');
+    else if (v === idx) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  document.getElementById('toolbar').hidden = true;
+  document.getElementById('hud-score').textContent = run.score;
+  document.getElementById('hud-streak').textContent = run.streak;
+  const last = run.kind === 'mission' && run.i === run.qs.length - 1;
+  const heading = ok ? `Correct, +${pts} points` : idx === null ? 'Time is up' : 'Not quite';
+  document.getElementById('reveal-slot').innerHTML = `<div class="reveal">
+    <div class="verdict ${ok ? 'good' : 'bad'}">${heading}</div>
+    ${ok ? '' : `<p><span class="goodans">Correct answer:</span> ${q.o[0]}</p>`}
+    <p>${q.e}</p>
+    ${q.n ? `<p class="school"><strong>Between the schools:</strong> ${q.n}</p>` : ''}
+    <div class="sources"><b>Check the source</b>${sourcesHTML(q.s)}</div>
+    ${run.kind === 'mission'
+      ? `<div class="btnrow"><button class="btn" id="next-btn" data-act="next">${last ? 'See results' : 'Next question'}</button></div>`
+      : `<p class="savenote" id="live-next"></p>`}
+  </div>`;
+  if (ok) { popScore(pts); burst(26); }
+  if (run.kind === 'mission') document.getElementById('next-btn').focus({ preventScroll: true });
+}
+function popScore(pts) {
+  const el = document.createElement('div');
+  el.className = 'pop'; el.textContent = '+' + pts; el.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+function useHint() {
+  if (!run || run.answered || run.hintUsed) return;
+  run.hintUsed = true;
+  document.getElementById('hint-slot').innerHTML = `<div class="hintbox"><strong>Hint:</strong> ${run.q.h}</div>`;
+  const b = document.getElementById('hint-btn'); if (b) b.disabled = true;
+}
+
+/* ---------- Live Round ---------- */
+async function enterLive() {
+  clearTicker();
+  view = 'play';
+  run = { kind: 'live', i: -1, score: 0, streak: 0, log: [], fresh: {}, total: ANSWER_MS, answered: false, hintUsed: false, start: null, shown: null };
+  app.innerHTML = `<div class="play"><div class="card lobby" style="--mc:var(--cobalt)"><p class="label">Checking the shared clock</p></div></div>`;
+  await Promise.race([syncClock(), new Promise(r => setTimeout(r, 2500))]);
+  if (!run || run.kind !== 'live') return;
+  run.start = Math.floor(now() / SLOT_MS) + 1;
+  renderLobby();
+  ticker = setInterval(liveTick, 200);
+  liveTick();
+}
+function renderLobby() {
+  app.innerHTML = `<div class="play"><div class="card lobby" style="--mc:var(--cobalt)">
+    <span class="clockchip">${clock.source === 'server' ? 'Timed by the server clock' : 'Timed by your device clock'}</span>
+    <h1 style="font-size:2rem;color:var(--cobalt)">The Live Round starts soon</h1>
+    <div class="livecount"><span id="lobby-count"></span><small>seconds to question 1</small></div>
+    <p>${LIVE_LEN} questions from any mission. You get ${ANSWER_MS / 1000} seconds to answer each one, then ${(SLOT_MS - ANSWER_MS) / 1000} seconds to read the explanation. The next question arrives on the clock, so keep this page open.</p>
+    <div class="btnrow"><button class="btn ghost small" data-act="quit">Back to the map</button></div>
+  </div></div>`;
+}
+function liveTick() {
+  if (!run || run.kind !== 'live') return;
+  const t = now(), slot = Math.floor(t / SLOT_MS), into = t % SLOT_MS;
+  if (slot < run.start) {
+    const el = document.getElementById('lobby-count');
+    if (el) el.textContent = Math.ceil(((run.start * SLOT_MS) - t) / 1000);
+    return;
+  }
+  const idx = slot - run.start;
+  if (idx >= LIVE_LEN) { finishLive(); return; }
+  if (run.shown !== slot) {
+    if (run.i >= 0 && !run.answered) answer(null);
+    run.shown = slot; run.i = idx;
+    const { q, order } = slotQuestion(slot);
+    run.q = q; run.answered = false; run.hintUsed = false;
+    app.innerHTML = questionHTML(missionOf(q.mid), q, order);
+    window.scrollTo(0, 0);
+    document.getElementById('q-text').focus({ preventScroll: true });
+  }
+  if (into < ANSWER_MS) {
+    setTimer(ANSWER_MS - into, ANSWER_MS);
+  } else {
+    if (!run.answered) answer(null);
+    const left = SLOT_MS - into;
+    setTimer(left, SLOT_MS - ANSWER_MS, -1);
+    const el = document.getElementById('live-next');
+    if (el) el.textContent = idx === LIVE_LEN - 1 ? `Results in ${Math.ceil(left / 1000)} seconds` : `Next question in ${Math.ceil(left / 1000)} seconds`;
+  }
+}
+function finishLive() {
+  clearTicker();
+  const correct = run.log.filter(l => l && l.ok).length;
+  S.live.plays = (S.live.plays || 0) + 1;
+  const isBest = run.score > (S.live.best || 0);
+  if (isBest) S.live.best = run.score;
+  S.live.correct = Math.max(S.live.correct || 0, correct);
+  saveAll();
+  renderResults({ title: correct === LIVE_LEN ? 'A perfect Live Round. MashaAllah!' : correct >= 3 ? 'Well done. Barakallahu feek!' : 'Every round teaches something new.', correct, of: LIVE_LEN, score: run.score, best: S.live.best, isBest, stars: null, again: 'live', celebrate: correct >= 3 ? (correct === LIVE_LEN ? 200 : 110) : 0 });
+}
+
+/* ---------- Results ---------- */
+function finishMission() {
+  clearTicker();
+  const correct = run.log.filter(l => l.ok).length;
+  const stars = starsFor(correct);
+  const m = run.m;
+  const prev = S.missions[m.id] || { best: 0, stars: 0, correct: 0, plays: 0 };
+  const isBest = run.score > prev.best;
+  S.missions[m.id] = { best: Math.max(prev.best, run.score), stars: Math.max(prev.stars, stars), correct: Math.max(prev.correct, correct), plays: prev.plays + 1 };
+  saveAll();
+  const titles = ['Every attempt is learning.', 'A good start. Keep going!', 'Well done. Barakallahu feek!', 'All eight correct. MashaAllah!'];
+  renderResults({ title: titles[stars], correct, of: run.qs.length, score: run.score, best: S.missions[m.id].best, isBest, stars, again: m.id, missionName: m.name, celebrate: [0, 70, 130, 240][stars] });
+}
+function renderResults(r) {
+  view = 'results';
+  const missed = run.log.filter(l => l && !l.ok);
+  const complete = totalStars() === MAX_STARS;
+  const nextM = MISSIONS.find(m => (S.missions[m.id]?.stars || 0) < 3 && m.id !== r.again);
+  const fresh = Object.keys(run.fresh).length;
+  app.innerHTML = `<div class="stack">
+    <section class="results-top">
+      ${rosetteSVG(run.fresh)}
+      <div class="stack" style="gap:14px">
+        <span class="label">${r.stars === null ? 'Live Round complete' : r.missionName + ' mission complete'}</span>
+        <h1 tabindex="-1" id="res-h">${r.title}</h1>
+        ${r.stars === null ? '' : starHTML(r.stars, 3, 'bigstars')}
+        <div class="tally">
+          <div><span class="label">Correct</span><b>${r.correct} / ${r.of}</b></div>
+          <div><span class="label">Score</span><b>${r.score}</b></div>
+          <div><span class="label">${r.isBest ? 'New best' : 'Your best'}</span><b>${r.best}</b></div>
+          <div><span class="label">New tiles</span><b>${fresh}</b></div>
+        </div>
+        ${complete ? '<p><strong>You have earned all fifteen stars and completed the quest. Alhamdulillah.</strong></p>' : ''}
+        <div class="btnrow">
+          ${nextM ? `<button class="btn gold" data-act="start" data-id="${nextM.id}">Next: ${nextM.name}</button>` : ''}
+          <button class="btn ghost" data-act="${r.again === 'live' ? 'live' : 'start'}" data-id="${r.again}">${r.again === 'live' ? 'Join another round' : 'Play this mission again'}</button>
+          <button class="btn ghost" data-act="home">Back to the map</button>
+        </div>
+      </div>
+    </section>
+    ${missed.length ? `<section class="stack" style="gap:12px" aria-labelledby="rev-h">
+      <h2 id="rev-h" style="font-size:1.6rem">Review what you missed</h2>
+      <div class="review">${missed.map(l => `<div class="review-item">
+        <strong>${l.q.t}</strong>
+        <p><span class="goodans">Answer:</span> ${l.q.o[0]}</p>
+        <p>${l.q.e}</p>
+        <div class="sources">${sourcesHTML(l.q.s)}</div>
+      </div>`).join('')}</div>
+    </section>` : ''}
+  </div>`;
+  window.scrollTo(0, 0);
+  document.getElementById('res-h').focus({ preventScroll: true });
+  run = null;
+  if (r.celebrate) burst(r.celebrate, true);
+}
+
+/* ---------- Celebration: falling eight-pointed stars ---------- */
+const fx = document.getElementById('fx');
+let fxParts = [], fxRaf = null;
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function burst(count, big = false) {
+  if (reduced()) return;
+  const W = innerWidth, H = innerHeight, dpr = devicePixelRatio || 1;
+  fx.hidden = false;
+  fx.width = W * dpr; fx.height = H * dpr;
+  const colors = ['#FFC21A', '#0A9B66', '#0596B7', '#D92B4B', '#1B4FD8'];
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 5;
+    fxParts.push(big ? {
+      x: Math.random() * W, y: -20 - Math.random() * H * 0.9,
+      vx: (Math.random() - .5) * 1.2, vy: 1 + Math.random() * 2, g: .02,
+      r: 3 + Math.random() * 5, c: colors[i % colors.length],
+      rot: Math.random() * 6, vr: (Math.random() - .5) * .08, life: 1, decay: .0032 + Math.random() * .002
+    } : {
+      x: W / 2, y: H * 0.3,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2, g: .16,
+      r: 3 + Math.random() * 3, c: colors[i % colors.length],
+      rot: Math.random() * 6, vr: (Math.random() - .5) * .3, life: 1, decay: .012 + Math.random() * .012
+    });
+  }
+  if (!fxRaf) fxRaf = requestAnimationFrame(fxStep);
+}
+function fxStep() {
+  const ctx = fx.getContext('2d'), dpr = devicePixelRatio || 1;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  fxParts = fxParts.filter(p => p.life > 0);
+  for (const p of fxParts) {
+    p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .99; p.rot += p.vr; p.life -= p.decay;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.globalAlpha = Math.max(0, Math.min(1, p.life * 2)); ctx.fillStyle = p.c;
+    for (let k = 0; k < 2; k++) { ctx.rotate(Math.PI / 4); ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 2); }
+    ctx.restore();
+  }
+  if (fxParts.length) { fxRaf = requestAnimationFrame(fxStep); }
+  else { fxRaf = null; ctx.clearRect(0, 0, innerWidth, innerHeight); fx.hidden = true; }
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const act = b.dataset.act;
+  if (act === 'start') startMission(b.dataset.id);
+  else if (act === 'next-mission') {
+    const m = MISSIONS.find(x => (S.missions[x.id]?.stars || 0) < 3) || MISSIONS[0];
+    startMission(m.id);
+  }
+  else if (act === 'live') enterLive();
+  else if (act === 'answer') answer(+b.dataset.idx);
+  else if (act === 'hint') useHint();
+  else if (act === 'next') {
+    run.i++;
+    if (run.i >= run.qs.length) finishMission(); else showMissionQuestion();
+  }
+  else if (act === 'quit' || act === 'home') { saveCloud(); renderHome(); }
+  else if (act === 'reset-ask') {
+    document.getElementById('reset-zone').innerHTML = `<div class="btnrow" style="align-items:center"><span>Erase all your stars, points and tiles? This cannot be undone.</span><button class="btn small" style="background:var(--bad);box-shadow:none" data-act="reset-yes">Erase</button><button class="btn ghost small" data-act="reset-no">Keep my progress</button></div>`;
+  }
+  else if (act === 'reset-no') renderHome();
+  else if (act === 'reset-yes') { S = blank(); saveAll(); renderHome(); }
+});
+document.addEventListener('keydown', e => {
+  if (!run || view !== 'play' || e.metaKey || e.ctrlKey || e.altKey) return;
+  const opts = [...document.querySelectorAll('.opt')];
+  if (!opts.length) return;
+  if (/^[1-4]$/.test(e.key) && !run.answered) { const o = opts[+e.key - 1]; if (o) o.click(); }
+  else if ((e.key === 'h' || e.key === 'H') && !run.answered) useHint();
+});
+
+renderHome();
+initCloud();
+</script>
+
+</body></html>
